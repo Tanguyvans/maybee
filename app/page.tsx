@@ -5,6 +5,7 @@ import {
   useTelegramLogin,
   useDynamicContext,
 } from "../lib/dynamic";
+import Image from 'next/image'; // Add this import
 
 import Spinner from "./Spinner";
 
@@ -24,17 +25,17 @@ export default function Main() {
     };
 
     signIn();
-  }, [sdkHasLoaded]);
+  }, [sdkHasLoaded, telegramSignIn, user]); // Add telegramSignIn and user here
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black flex flex-col items-center justify-center text-white">
       <div className="flex flex-col items-center justify-center text-center">
         <div className="mb-6">
           <div className="inline-flex items-center justify-center">
-            <img src="/logo.png" alt="logo" />
+            <Image src="/logo.png" alt="logo" width={100} height={100} /> {/* Replace img with Image */}
           </div>
         </div>
-        <h1 className="text-4xl font-bold mb-4">Hello it's maybee</h1>
+        <h1 className="text-4xl font-bold mb-4">Onboard the world</h1>
         <p className="text-lg mb-16">
           Web3 login for <span className="text-blue-400">everyone</span>.
         </p>
