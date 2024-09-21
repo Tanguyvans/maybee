@@ -83,11 +83,7 @@ To run the Telegram bot:
 
 2. Run the bot script:
    ```
-   npm run bot
-   ```
-   or
-   ```
-   yarn bot
+   ts-node scripts/bot.ts
    ```
 
 The bot should now be active and responding to commands in your Telegram channel.
