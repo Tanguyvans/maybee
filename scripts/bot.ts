@@ -72,23 +72,23 @@ bot.start(async (ctx: any) => {
       inline_keyboard: [
         [
           {
-            text: "Create 🆕",
+            text: "Open Mini Web App 🚀",
             web_app: {
-              url: `${LOGIN_URL}?view=create&telegramAuthToken=${encodedTelegramAuthToken}`,
-            },
-          },
-          {
-            text: "Join 🤝",
-            web_app: {
-              url: `${LOGIN_URL}?view=join&telegramAuthToken=${encodedTelegramAuthToken}`,
+              url: `${LOGIN_URL}/?telegramAuthToken=${encodedTelegramAuthToken}`,
             },
           },
         ],
         [
           {
-            text: "Open Mini Web App 🚀",
+            text: "Create 🆕",
             web_app: {
-              url: `${LOGIN_URL}?telegramAuthToken=${encodedTelegramAuthToken}`,
+              url: `${LOGIN_URL}/create?telegramAuthToken=${encodedTelegramAuthToken}`,
+            },
+          },
+          {
+            text: "Join 🤝",
+            web_app: {
+              url: `${LOGIN_URL}/join?telegramAuthToken=${encodedTelegramAuthToken}`,
             },
           },
         ],
