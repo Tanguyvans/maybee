@@ -57,7 +57,7 @@ export default function Join({ onBack, isWalletConnected }: JoinProps) {
   const getAllMarketInfo = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:3001/api/getAllMarketInfo"
+        "https://be92-223-255-254-102.ngrok-free.app/api/getAllMarketInfo"
       ); // Change URL based on your backend server's URL
       if (typeof response.data.data == "string") {
         let data = JSON.parse(response.data.data);

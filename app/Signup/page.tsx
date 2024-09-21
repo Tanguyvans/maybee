@@ -10,12 +10,14 @@ import Spinner from "../Spinner";
 import Link from "next/link";
 import Button from "../components/Button";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 export default function Main() {
   const { sdkHasLoaded, user } = useDynamicContext();
   const { telegramSignIn } = useTelegramLogin();
   const [isLoading, setIsLoading] = useState<boolean>(true);
-
+  const [userData, setUserData] = useState("");
+  const router = useRouter();
   useEffect(() => {
     if (!sdkHasLoaded) return;
 
@@ -30,12 +32,15 @@ export default function Main() {
   }, [sdkHasLoaded, telegramSignIn, user]);
   async function claimAccount(username: any) {
     const response = await axios.post(
-      "http://localhost:3001/api/claimAccount",
+      "https://be92-223-255-254-102.ngrok-free.app/api/claimAccount",
       {
         username,
       }
     ); // Change URL based on your backend server's URL
     console.log(response);
+    setUserData(response.data.username);
+    alert("Registration success");
+    router.push("/Home");
   }
   useEffect(() => {
     if (user) {

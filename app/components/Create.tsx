@@ -22,7 +22,7 @@ export default function Create({ onBack }: { onBack: () => void }) {
 
     try {
       const response = await axios.post(
-        "http://localhost:3001/api/createmarket",
+        "https://be92-223-255-254-102.ngrok-free.app/api/createmarket",
         {
           description: title,
         }
