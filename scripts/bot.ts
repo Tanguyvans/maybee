@@ -115,7 +115,6 @@ bot.command('testmessage', async (ctx: any) => {
   console.log('Test message command received');
   const channelId = '@maybee_community';
   const topic2Id = 4;
-  const cardId = 1; // Replace with actual card ID
 
   const message = `This is a test message with a photo and inline keyboard.
 
@@ -152,22 +151,45 @@ function updateTopicsPeriodically() {
   const topic2Id = 4; // Topic ID for "Hottest 1H"
 
   // Update for Hottest 1H (every 1 minute)
+  // Update for Hottest 1H (every 1 minute)
   setInterval(async () => {
-    console.log('Interval triggered for Hottest 24H, attempting to send message...');
+    console.log('Interval triggered for Hottest 1H, attempting to send message...');
     const currentTime = new Date().toISOString();
-    const cardId = 1;  // Replace with actual card ID
-    const cardUrl = `${LOGIN_URL}/market/${cardId}`;
-    await sendToChannelTopic(channelId, topic1Id, `Hottest 24H update at ${currentTime}\n\nCheck out this market: ${cardUrl}`);
-  }, 600000); // 10 minutes in milliseconds
 
-  // Update for Hottest 24H (every 10 minutes)
-  setInterval(async () => {
-    console.log('Interval triggered for Hottest 24H, attempting to send message...');
-    const currentTime = new Date().toISOString();
-    const cardId = 1;  // Replace with actual card ID
-    const cardUrl = `${LOGIN_URL}/market/${cardId}`;
-    await sendToChannelTopic(channelId, topic1Id, `Hottest 24H update at ${currentTime}\n\nCheck out this market: ${cardUrl}`);
-  }, 600000); // 10 minutes in milliseconds
+    const message = `Hottest 1H update at ${currentTime}
+
+    Check out this market!`;
+
+    const keyboard = {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: "Open Market",
+              url: `t.me/maybee01_bot/maybee_app`
+            }
+          ]
+        ]
+      }
+    };
+
+    await sendToChannelTopic(
+        channelId, 
+        topic2Id, 
+        message,
+        path.join(__dirname, 'image.png'), // Replace with the path to your image
+        keyboard
+      );
+    }, 30000); // 1 minute in milliseconds
+
+  // // Update for Hottest 24H (every 10 minutes)
+  // setInterval(async () => {
+  //   console.log('Interval triggered for Hottest 24H, attempting to send message...');
+  //   const currentTime = new Date().toISOString();
+  //   const cardId = 1;  // Replace with actual card ID
+  //   const cardUrl = `${LOGIN_URL}/market/${cardId}`;
+  //   await sendToChannelTopic(channelId, topic1Id, `Hottest 24H update at ${currentTime}\n\nCheck out this market: ${cardUrl}`);
+  // }, 30000); // 10 minutes in milliseconds
 
   console.log('Periodic updates set up for both topics');
 }
