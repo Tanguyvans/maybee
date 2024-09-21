@@ -1,6 +1,8 @@
 const { Telegraf } = require("telegraf");
 const jwt = require("jsonwebtoken");
 const nodeCrypto = require("crypto");
+const path = require('path');
+
 require('dotenv').config();
 
 // Environment variables
@@ -20,7 +22,7 @@ const bot = new Telegraf(TOKEN);
 /**
  * Start command handling for the bot
  */
-bot.start((ctx: any) => {
+bot.start(async (ctx: any) => {
   // Extract user data from the context
   const userData = {
     authDate: Math.floor(new Date().getTime()),
@@ -65,11 +67,76 @@ bot.start((ctx: any) => {
   };
 
   // Send a welcome message with the inline keyboard
-  ctx.reply("Welcome to XYZ Mini Web App", keyboard);
+  await ctx.replyWithPhoto(
+    { source: path.join(__dirname, 'image.png') }, // Replace with the URL of your image
+    {
+      caption: `Welcome to Maybee! 
+
+      Maybee is an app to place small bets easily and quickly.
+
+      You can use it to bet with friends or individually.
+
+      Find some topics to bet on in our channels: 
+
+      [Hottest 24H](https://t.me/maybee_community/2)
+
+      [Hottest 1H](https://t.me/maybee_community/4)`,
+      parse_mode: 'Markdown',
+      ...keyboard,
+      disable_web_page_preview: true
+    }
+  );
 });
+
+bot.command('testmessage', async (ctx: any) => {
+  console.log('Test message command received');
+  const channelId = '@maybee_community';
+  const topic2Id = 4;
+  await sendToChannelTopic(channelId, topic2Id, 'This is a test message');
+  ctx.reply('Test message sent');
+});
+
+// Function to send a message to a specific topic in a channel
+async function sendToChannelTopic(channelId: string, topicId: number, message: string) {
+  try {
+    await bot.telegram.sendMessage(channelId, message, {
+      message_thread_id: topicId,
+      parse_mode: 'Markdown'
+    });
+    console.log(`Message sent to channel ${channelId}, topic ${topicId}`);
+  } catch (error) {
+    console.error(`Error sending message to channel ${channelId}, topic ${topicId}:`, error);
+  }
+}
+
+// Function to update topics periodically
+function updateTopicsPeriodically() {
+  const channelId = '@maybee_community';
+  const topic1Id = 2; // Topic ID for "Hottest 24H"
+  const topic2Id = 4; // Topic ID for "Hottest 1H"
+
+  // Update for Hottest 1H (every 1 minute)
+  setInterval(async () => {
+    console.log('Interval triggered for Hottest 1H, attempting to send message...');
+    const currentTime = new Date().toISOString();
+    await sendToChannelTopic(channelId, topic2Id, `Hottest 1H update at ${currentTime}`);
+  }, 60000); // 1 minute in milliseconds
+
+  // Update for Hottest 24H (every 10 minutes)
+  setInterval(async () => {
+    console.log('Interval triggered for Hottest 24H, attempting to send message...');
+    const currentTime = new Date().toISOString();
+    await sendToChannelTopic(channelId, topic1Id, `Hottest 24H update at ${currentTime}`);
+  }, 600000); // 10 minutes in milliseconds
+
+  console.log('Periodic updates set up for both topics');
+}
 
 // Launch the bot
 bot.launch();
+
+updateTopicsPeriodically();
+
 
 /**
  * Function to generate HMAC hash for Telegram authentication
