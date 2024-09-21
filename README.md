@@ -2,6 +2,11 @@
 
 MayBee is a decentralized prediction market platform built on the Flow blockchain.
 
+## Links
+
+[MayBee Telegram](https://t.me/maybee01_bot)
+[Smart Contract Github](https://github.com/HemangVora/MayBee-contract)
+
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
