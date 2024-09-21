@@ -12,7 +12,7 @@ interface JoinProps {
 const mockMarkets = [
   {
     id: 1,
-    title: 'Will Bitcoin reach $100k by end of 2023?',
+    title: 'Will Bitcoin reach $100k by end of 2025?',
     optionA: 'Yes',
     optionB: 'No',
     percentageA: 65,
@@ -21,7 +21,7 @@ const mockMarkets = [
   },
   {
     id: 2,
-    title: 'Will Ethereum 2.0 launch before July 2023?',
+    title: 'Will Trump win the 2024 presidential election?',
     optionA: 'Yes',
     optionB: 'No',
     percentageA: 80,

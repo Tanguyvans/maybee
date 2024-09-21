@@ -91,7 +91,7 @@ export default function Card({ id, title, optionA, optionB, percentageA, percent
               </button>
             </div>
             <div className="mb-4">
-              <label className="block mb-2">Bet Amount: {betAmount.toFixed(1)} USDC</label>
+              <label className="block mb-2">Bet Amount: {betAmount.toFixed(1)} FLOW</label>
               <input
                 type="range"
                 min="0.1"
@@ -102,8 +102,8 @@ export default function Card({ id, title, optionA, optionB, percentageA, percent
                 className="w-full"
               />
               <div className="flex justify-between text-sm mt-1">
-                <span>0.1 USDC</span>
-                <span>10 USDC</span>
+                <span>1 FLOW</span>
+                <span>20 FLOW</span>
               </div>
             </div>
             <div className="flex justify-between">
