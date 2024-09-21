@@ -3,6 +3,22 @@ const jwt = require("jsonwebtoken");
 const nodeCrypto = require("crypto");
 const path = require('path');
 
+const welcomeMessage = `
+*Welcome to Maybee! 🐝✨*
+
+*Maybee* makes it *super easy* to place fun wagers with just a few taps. You can either join a cozy *hive of friends* for some friendly competition, or dive into the buzz of a *big crowd* to test your instincts!
+
+💡 *Check out our betting channels:*
+
+🔸 [Hottest 24H](https://t.me/maybee_community/2)
+🔸 [Hottest 1H](https://t.me/maybee_community/4)
+
+*Win and you’ll get honey! 🍯*  
+*Lose and you’ll get stung! 🐝*
+
+*Are you ready to play? 🕹️*
+`;
+
 require('dotenv').config();
 
 // Environment variables
@@ -56,9 +72,23 @@ bot.start(async (ctx: any) => {
       inline_keyboard: [
         [
           {
+            text: "Create 🆕",
+            web_app: {
+              url: `${LOGIN_URL}?view=create&telegramAuthToken=${encodedTelegramAuthToken}`,
+            },
+          },
+          {
+            text: "Join 🤝",
+            web_app: {
+              url: `${LOGIN_URL}?view=join&telegramAuthToken=${encodedTelegramAuthToken}`,
+            },
+          },
+        ],
+        [
+          {
             text: "Open Mini Web App 🚀",
             web_app: {
-              url: `${LOGIN_URL}/?telegramAuthToken=${encodedTelegramAuthToken}`,
+              url: `${LOGIN_URL}?telegramAuthToken=${encodedTelegramAuthToken}`,
             },
           },
         ],
@@ -70,17 +100,7 @@ bot.start(async (ctx: any) => {
   await ctx.replyWithPhoto(
     { source: path.join(__dirname, 'image.png') }, // Replace with the URL of your image
     {
-      caption: `Welcome to Maybee! 
-
-      Maybee is an app to place small bets easily and quickly.
-
-      You can use it to bet with friends or individually.
-
-      Find some topics to bet on in our channels: 
-
-      [Hottest 24H](https://t.me/maybee_community/2)
-
-      [Hottest 1H](https://t.me/maybee_community/4)`,
+      caption: welcomeMessage,
       parse_mode: 'Markdown',
       ...keyboard,
       disable_web_page_preview: true
@@ -144,14 +164,12 @@ Check out this market!`;
   ctx.reply('Test message sent');
 });
 
-// Function to update topics periodically
 function updateTopicsPeriodically() {
   const channelId = '@maybee_community';
   const topic1Id = 2; // Topic ID for "Hottest 24H"
   const topic2Id = 4; // Topic ID for "Hottest 1H"
 
-  // Update for Hottest 1H (every 1 minute)
-  // Update for Hottest 1H (every 1 minute)
+  // Update for Hottest 1H (every 30 seconds)
   setInterval(async () => {
     console.log('Interval triggered for Hottest 1H, attempting to send message...');
     const currentTime = new Date().toISOString();
@@ -166,7 +184,7 @@ function updateTopicsPeriodically() {
           [
             {
               text: "Open Market",
-              url: `t.me/maybee01_bot/maybee_app`
+              url: `t.me/maybee01_bot/maybee_app_hottest1h`
             }
           ]
         ]
@@ -180,16 +198,38 @@ function updateTopicsPeriodically() {
         path.join(__dirname, 'image.png'), // Replace with the path to your image
         keyboard
       );
-    }, 30000); // 1 minute in milliseconds
+  }, 600000); // 30 seconds in milliseconds
 
-  // // Update for Hottest 24H (every 10 minutes)
-  // setInterval(async () => {
-  //   console.log('Interval triggered for Hottest 24H, attempting to send message...');
-  //   const currentTime = new Date().toISOString();
-  //   const cardId = 1;  // Replace with actual card ID
-  //   const cardUrl = `${LOGIN_URL}/market/${cardId}`;
-  //   await sendToChannelTopic(channelId, topic1Id, `Hottest 24H update at ${currentTime}\n\nCheck out this market: ${cardUrl}`);
-  // }, 30000); // 10 minutes in milliseconds
+  // Update for Hottest 24H (every 10 minutes)
+  setInterval(async () => {
+    console.log('Interval triggered for Hottest 24H, attempting to send message...');
+    const currentTime = new Date().toISOString();
+
+    const message = `Hottest 24H update at ${currentTime}
+
+    Check out this market!`;
+
+    const keyboard = {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: "Open Market",
+              url: `t.me/maybee01_bot/maybee_app_hottest24h`
+            }
+          ]
+        ]
+      }
+    };
+
+    await sendToChannelTopic(
+        channelId, 
+        topic1Id, 
+        message,
+        path.join(__dirname, 'image.png'), // Replace with the path to your image
+        keyboard
+      );
+  }, 600000); // 10 minutes in milliseconds
 
   console.log('Periodic updates set up for both topics');
 }
