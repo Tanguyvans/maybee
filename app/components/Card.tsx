@@ -94,9 +94,9 @@ export default function Card({ id, title, optionA, optionB, percentageA, percent
               <label className="block mb-2">Bet Amount: {betAmount.toFixed(1)} FLOW</label>
               <input
                 type="range"
-                min="0.1"
-                max="10"
-                step="0.1"
+                min="1"
+                max="20"
+                step="1"
                 value={betAmount}
                 onChange={(e) => setBetAmount(Number(e.target.value))}
                 className="w-full"
