@@ -88,26 +88,62 @@ bot.start(async (ctx: any) => {
   );
 });
 
-bot.command('testmessage', async (ctx: any) => {
-  console.log('Test message command received');
-  const channelId = '@maybee_community';
-  const topic2Id = 4;
-  await sendToChannelTopic(channelId, topic2Id, 'This is a test message');
-  ctx.reply('Test message sent');
-});
-
-// Function to send a message to a specific topic in a channel
-async function sendToChannelTopic(channelId: string, topicId: number, message: string) {
+async function sendToChannelTopic(channelId: string, topicId: number, message: string, photo?: string, extra?: any) {
   try {
-    await bot.telegram.sendMessage(channelId, message, {
-      message_thread_id: topicId,
-      parse_mode: 'Markdown'
-    });
+    if (photo) {
+      await bot.telegram.sendPhoto(channelId, { source: photo }, {
+        caption: message,
+        message_thread_id: topicId,
+        parse_mode: 'Markdown',
+        ...extra // Spread the extra options
+      });
+    } else {
+      await bot.telegram.sendMessage(channelId, message, {
+        message_thread_id: topicId,
+        parse_mode: 'Markdown',
+        ...extra // Spread the extra options
+      });
+    }
     console.log(`Message sent to channel ${channelId}, topic ${topicId}`);
   } catch (error) {
     console.error(`Error sending message to channel ${channelId}, topic ${topicId}:`, error);
   }
 }
+
+// Modify the testmessage command
+bot.command('testmessage', async (ctx: any) => {
+  console.log('Test message command received');
+  const channelId = '@maybee_community';
+  const topic2Id = 4;
+  const cardId = 1; // Replace with actual card ID
+
+  const message = `This is a test message with a photo and inline keyboard.
+
+Check out this market!`;
+
+  const keyboard = {
+    reply_markup: {
+      inline_keyboard: [
+        [
+          {
+            text: "Open Market",
+            url: `t.me/maybee01_bot/maybee_app`
+          }
+        ]
+      ]
+    }
+  };
+
+  await sendToChannelTopic(
+    channelId, 
+    topic2Id, 
+    message,
+    path.join(__dirname, 'image.png'), // Replace with the path to your image
+    keyboard
+  );
+
+  ctx.reply('Test message sent');
+});
 
 // Function to update topics periodically
 function updateTopicsPeriodically() {
@@ -117,16 +153,20 @@ function updateTopicsPeriodically() {
 
   // Update for Hottest 1H (every 1 minute)
   setInterval(async () => {
-    console.log('Interval triggered for Hottest 1H, attempting to send message...');
+    console.log('Interval triggered for Hottest 24H, attempting to send message...');
     const currentTime = new Date().toISOString();
-    await sendToChannelTopic(channelId, topic2Id, `Hottest 1H update at ${currentTime}`);
-  }, 60000); // 1 minute in milliseconds
+    const cardId = 1;  // Replace with actual card ID
+    const cardUrl = `${LOGIN_URL}/market/${cardId}`;
+    await sendToChannelTopic(channelId, topic1Id, `Hottest 24H update at ${currentTime}\n\nCheck out this market: ${cardUrl}`);
+  }, 600000); // 10 minutes in milliseconds
 
   // Update for Hottest 24H (every 10 minutes)
   setInterval(async () => {
     console.log('Interval triggered for Hottest 24H, attempting to send message...');
     const currentTime = new Date().toISOString();
-    await sendToChannelTopic(channelId, topic1Id, `Hottest 24H update at ${currentTime}`);
+    const cardId = 1;  // Replace with actual card ID
+    const cardUrl = `${LOGIN_URL}/market/${cardId}`;
+    await sendToChannelTopic(channelId, topic1Id, `Hottest 24H update at ${currentTime}\n\nCheck out this market: ${cardUrl}`);
   }, 600000); // 10 minutes in milliseconds
 
   console.log('Periodic updates set up for both topics');
