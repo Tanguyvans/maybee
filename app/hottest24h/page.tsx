@@ -9,7 +9,7 @@ import Spinner from "@/app/Spinner";
 const mockMarkets24h = [
   {
     id: 1,
-    title: 'Will Bitcoin reach $100k by end of 2023?',
+    title: 'Will Bitcoin reach $100k by end of 2024?',
     optionA: 'Yes',
     optionB: 'No',
     percentageA: 65,
