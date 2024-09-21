@@ -5,6 +5,7 @@ import Card from './Card';
 
 interface JoinProps {
   onBack: () => void;
+  isWalletConnected: boolean;
 }
 
 // This would typically come from an API or database
@@ -48,7 +49,7 @@ const mockMarkets = [
   // Add more mock markets as needed
 ];
 
-export default function Join({ onBack }: JoinProps) {
+export default function Join({ onBack, isWalletConnected }: JoinProps) {
   const router = useRouter();
 
   const handleBack = () => {
@@ -64,10 +65,17 @@ export default function Join({ onBack }: JoinProps) {
       <h2 className="text-2xl font-bold mb-4">Join a Market</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
         {mockMarkets.map((market) => (
-          <Card key={market.id} {...market} isClickable={true} />
+          <Card 
+            key={market.id} 
+            {...market} 
+            isClickable={isWalletConnected}
+          />
         ))}
       </div>
       <Button onClick={handleBack}>Back to Home</Button>
+      {!isWalletConnected && (
+        <p className="mt-4 text-yellow-400">Connect your wallet to interact with markets.</p>
+      )}
     </div>
   );
 }

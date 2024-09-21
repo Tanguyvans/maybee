@@ -36,7 +36,7 @@ export default function Main() {
             <Image src="/logo.png" alt="logo" width={100} height={100} />
           </div>
         </div>
-        <h1 className="text-4xl font-bold mb-4">MayBee 🐝🐝🐝</h1>
+        <h1 className="text-4xl font-bold mb-4">MayBee 🐝🐝</h1>
         <div className="flex space-x-4">
           <Link href="/create"><Button>Create</Button></Link>
           <Link href="/join"><Button>Join</Button></Link>

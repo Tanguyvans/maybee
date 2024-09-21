@@ -5,7 +5,7 @@ import Spinner from "../Spinner";
 import Join from '../components/Join';
 
 export default function JoinPage() {
-  const { sdkHasLoaded, user } = useDynamicContext();
+  const { sdkHasLoaded, user, primaryWallet } = useDynamicContext();
   const { telegramSignIn } = useTelegramLogin();
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -22,14 +22,22 @@ export default function JoinPage() {
     signIn();
   }, [sdkHasLoaded, telegramSignIn, user]);
 
+  const isWalletConnected = !!primaryWallet;
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black flex flex-col items-center justify-center text-white">
-      {isLoading ? (
-        <Spinner />
-      ) : (
-        <Join onBack={() => window.history.back()} />
-      )}
-      <div className="mt-6">
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black flex flex-col text-white">
+      <div className="flex-grow overflow-auto pb-24">
+        {isLoading ? (
+          <div className="h-full flex items-center justify-center">
+            <Spinner />
+          </div>
+        ) : (
+          <div className="h-full overflow-y-auto py-4">
+            <Join onBack={() => window.history.back()} isWalletConnected={isWalletConnected} />
+          </div>
+        )}
+      </div>
+      <div className="sticky bottom-0 p-6 bg-gradient-to-t from-gray-900 to-transparent h-24">
         <DynamicWidget />
       </div>
     </div>
