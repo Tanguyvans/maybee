@@ -4,17 +4,16 @@ import {
   DynamicWidget,
   useTelegramLogin,
   useDynamicContext,
-} from "../lib/dynamic";
+} from "../../lib/dynamic";
 import Image from "next/image";
-import Spinner from "./Spinner";
-import Button from "./components/Button";
-import Link from "next/link";
+import Spinner from "../Spinner";
+import { useRouter } from "next/navigation";
 
 export default function Main() {
   const { sdkHasLoaded, user } = useDynamicContext();
   const { telegramSignIn } = useTelegramLogin();
   const [isLoading, setIsLoading] = useState<boolean>(true);
-
+  const router = useRouter();
   useEffect(() => {
     if (!sdkHasLoaded) return;
 
@@ -27,7 +26,11 @@ export default function Main() {
 
     signIn();
   }, [sdkHasLoaded, telegramSignIn, user]);
-
+  useEffect(() => {
+    if (user) {
+      router.push("/Home");
+    }
+  }, [user]);
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black flex flex-col items-center justify-center text-white">
       <div className="flex flex-col items-center justify-center text-center">
@@ -37,17 +40,9 @@ export default function Main() {
           </div>
         </div>
         <h1 className="text-4xl font-bold mb-4">MayBee 🐝🐝</h1>
-        <div className="flex space-x-4">
-          <Link href="/Login" className="bg-[#FCE74E] rounded-lg">
-            <Button className="bg-[#FCE74E] text-blue-950 hover:bg-[#decc46]">
-              Login
-            </Button>
-          </Link>
-          <Link href="/Signup" className="bg-[#56A33F] rounded-lg">
-            <Button className="bg-[#56A33F] text-blue-100 hover:bg-[#488f32]">
-              Signup
-            </Button>
-          </Link>
+
+        <div className="mt-6">
+          {isLoading ? <Spinner /> : <DynamicWidget />}
         </div>
       </div>
     </div>
