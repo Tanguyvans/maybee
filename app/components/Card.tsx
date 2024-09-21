@@ -8,15 +8,21 @@ interface CardProps {
   percentageA: number;
   percentageB: number;
   totalBet: number;
+  isClickable: boolean;
 }
 
-export default function Card({ id, title, optionA, optionB, percentageA, percentageB, totalBet }: CardProps) {
+export default function Card({ id, title, optionA, optionB, percentageA, percentageB, totalBet, isClickable }: CardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState('');
   const [betAmount, setBetAmount] = useState(0.1);
 
   const handleCardClick = () => {
-    setIsModalOpen(true);
+    if (isClickable) {
+      setIsModalOpen(true);
+    } else {
+      console.log('Please log in to interact with this market');
+      // You could show a tooltip or modal here prompting the user to log in
+    }
   };
 
   const handleOptionSelect = (option: string) => {
@@ -31,10 +37,10 @@ export default function Card({ id, title, optionA, optionB, percentageA, percent
   return (
     <>
       <div 
-        className="bg-gray-800 rounded-lg overflow-hidden shadow-lg w-full max-w-sm cursor-pointer"
+        className={`bg-gray-800 rounded-lg overflow-hidden shadow-lg w-full max-w-sm 
+          ${isClickable ? 'cursor-pointer hover:bg-gray-700' : 'opacity-70'}`}
         onClick={handleCardClick}
       >
-        {/* Card content remains the same */}
         <div className="p-4">
           <h3 className="text-xl font-bold mb-2">{title}</h3>
           <div className="mb-2">
@@ -59,9 +65,14 @@ export default function Card({ id, title, optionA, optionB, percentageA, percent
             <span className="text-sm">Total Bet: {totalBet} USDC</span>
           </div>
         </div>
+        {!isClickable && (
+          <div className="bg-yellow-800 text-yellow-200 text-center py-2">
+            Log in to interact with this market
+          </div>
+        )}
       </div>
 
-      {isModalOpen && (
+      {isModalOpen && isClickable && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-gray-800 p-6 rounded-lg max-w-md w-full">
             <h2 className="text-2xl font-bold mb-4">{title}</h2>

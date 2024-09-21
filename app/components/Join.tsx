@@ -49,7 +49,6 @@ const mockMarkets = [
 ];
 
 export default function Join({ onBack }: JoinProps) {
-
   const router = useRouter();
 
   const handleBack = () => {
@@ -65,7 +64,7 @@ export default function Join({ onBack }: JoinProps) {
       <h2 className="text-2xl font-bold mb-4">Join a Market</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
         {mockMarkets.map((market) => (
-          <Card key={market.id} {...market} />
+          <Card key={market.id} {...market} isClickable={true} />
         ))}
       </div>
       <Button onClick={handleBack}>Back to Home</Button>
