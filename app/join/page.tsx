@@ -5,7 +5,7 @@ import Spinner from "../Spinner";
 import Join from '../components/Join';
 
 export default function JoinPage() {
-  const { sdkHasLoaded, user, primaryWallet } = useDynamicContext();
+  const { sdkHasLoaded, user } = useDynamicContext();
   const { telegramSignIn } = useTelegramLogin();
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -22,7 +22,7 @@ export default function JoinPage() {
     signIn();
   }, [sdkHasLoaded, telegramSignIn, user]);
 
-  const isWalletConnected = !!primaryWallet;
+  const isWalletConnected = !!user;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black flex flex-col text-white">
