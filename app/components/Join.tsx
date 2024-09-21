@@ -49,20 +49,25 @@ const mockMarkets = [
 ];
 
 export default function Join({ onBack }: JoinProps) {
+
   const router = useRouter();
 
   const handleBack = () => {
-    if (onBack) {
-      onBack();
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back();
     } else {
       router.push('/');
     }
-  };
+  };  
 
   return (
-    <div className="flex flex-col items-center">
-      <h1 className="text-2xl font-bold mb-4">Join a Bet</h1>
-      {/* Your join form or content here */}
+    <div className="w-full max-w-4xl">
+      <h2 className="text-2xl font-bold mb-4">Join a Market</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+        {mockMarkets.map((market) => (
+          <Card key={market.id} {...market} />
+        ))}
+      </div>
       <Button onClick={handleBack}>Back to Home</Button>
     </div>
   );
