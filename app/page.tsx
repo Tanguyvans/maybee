@@ -5,7 +5,7 @@ import {
   useTelegramLogin,
   useDynamicContext,
 } from "../lib/dynamic";
-import Image from 'next/image'; // Add this import
+import Image from 'next/image';
 
 import Spinner from "./Spinner";
 
@@ -25,14 +25,14 @@ export default function Main() {
     };
 
     signIn();
-  }, [sdkHasLoaded, telegramSignIn, user]); // Add telegramSignIn and user here
+  }, [sdkHasLoaded, telegramSignIn, user]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black flex flex-col items-center justify-center text-white">
       <div className="flex flex-col items-center justify-center text-center">
         <div className="mb-6">
           <div className="inline-flex items-center justify-center">
-            <Image src="/logo.png" alt="logo" width={100} height={100} /> {/* Replace img with Image */}
+            <Image src="/logo.png" alt="logo" width={100} height={100} />
           </div>
         </div>
         <h1 className="text-4xl font-bold mb-4">Onboard the world</h1>
