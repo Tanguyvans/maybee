@@ -6,20 +6,21 @@ export default function Create({ onBack }: { onBack: () => void }) {
   const router = useRouter();
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleBack = () => {
-    if (typeof window !== 'undefined' && window.history.length > 1) {
-      router.back();
-    } else {
-      router.push('/');
-    }
+    router.push('/');
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Here you would typically send the data to your backend
     console.log('Creating new card:', { title, date });
-    // After creation, you might want to redirect or show a success message
+    
+    // Show success alert
+    alert('Market created successfully!');
+    
+    // Redirect to root page
     router.push('/');
   };
 
