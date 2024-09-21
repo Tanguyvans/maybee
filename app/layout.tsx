@@ -11,17 +11,17 @@ import { DynamicWagmiConnector } from "@dynamic-labs/wagmi-connector";
 import { createConfig, WagmiProvider, useAccount } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { http } from "viem";
-import { flowTestnet } from "viem/chains";
+import { flowMainnet } from "viem/chains";
 
 const inter = Inter({ subsets: ["latin"] });
 
 const dynamicEnvId = process.env.NEXT_PUBLIC_DYNAMIC_ENV_ID;
 
 const config = createConfig({
-  chains: [flowTestnet],
+  chains: [flowMainnet],
   multiInjectedProviderDiscovery: false,
   transports: {
-    [flowTestnet.id]: http(),
+    [flowMainnet.id]: http(),
   },
 });
 

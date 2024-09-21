@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 interface CardProps {
   id: number;
@@ -11,16 +11,25 @@ interface CardProps {
   isClickable: boolean;
 }
 
-export default function Card({ id, title, optionA, optionB, percentageA, percentageB, totalBet, isClickable }: CardProps) {
+export default function Card({
+  id,
+  title,
+  optionA,
+  optionB,
+  percentageA,
+  percentageB,
+  totalBet,
+  isClickable,
+}: CardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState('');
+  const [selectedOption, setSelectedOption] = useState("");
   const [betAmount, setBetAmount] = useState(0.1);
 
   const handleCardClick = () => {
     if (isClickable) {
       setIsModalOpen(true);
     } else {
-      console.log('Please log in to interact with this market');
+      console.log("Please log in to interact with this market");
       // You could show a tooltip or modal here prompting the user to log in
     }
   };
@@ -36,29 +45,35 @@ export default function Card({ id, title, optionA, optionB, percentageA, percent
 
   return (
     <>
-      <div 
+      <div
         className={`bg-gray-800 rounded-lg overflow-hidden shadow-lg w-full max-w-sm 
-          ${isClickable ? 'cursor-pointer hover:bg-gray-700' : 'opacity-70'}`}
+          ${isClickable ? "cursor-pointer hover:bg-gray-700" : "opacity-70"}`}
         onClick={handleCardClick}
       >
         <div className="p-4">
           <h3 className="text-xl font-bold mb-2">{title}</h3>
           <div className="mb-2">
             <div className="flex justify-between mb-1">
-              <span>{optionA}</span>
+              <span>Yes</span>
               <span>{percentageA}%</span>
             </div>
             <div className="w-full bg-gray-700 rounded-full h-2.5">
-              <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${percentageA}%` }}></div>
+              <div
+                className="bg-blue-600 h-2.5 rounded-full"
+                style={{ width: `${percentageA}%` }}
+              ></div>
             </div>
           </div>
           <div className="mb-4">
             <div className="flex justify-between mb-1">
-              <span>{optionB}</span>
+              <span>No</span>
               <span>{percentageB}%</span>
             </div>
             <div className="w-full bg-gray-700 rounded-full h-2.5">
-              <div className="bg-red-600 h-2.5 rounded-full" style={{ width: `${percentageB}%` }}></div>
+              <div
+                className="bg-red-600 h-2.5 rounded-full"
+                style={{ width: `${percentageB}%` }}
+              ></div>
             </div>
           </div>
           <div className="text-right">
@@ -78,20 +93,26 @@ export default function Card({ id, title, optionA, optionB, percentageA, percent
             <h2 className="text-2xl font-bold mb-4">{title}</h2>
             <div className="mb-4">
               <button
-                className={`mr-2 px-4 py-2 rounded ${selectedOption === optionA ? 'bg-blue-600' : 'bg-gray-600'}`}
+                className={`mr-2 px-4 py-2 rounded ${
+                  selectedOption === optionA ? "bg-blue-600" : "bg-gray-600"
+                }`}
                 onClick={() => handleOptionSelect(optionA)}
               >
                 {optionA}
               </button>
               <button
-                className={`px-4 py-2 rounded ${selectedOption === optionB ? 'bg-red-600' : 'bg-gray-600'}`}
+                className={`px-4 py-2 rounded ${
+                  selectedOption === optionB ? "bg-red-600" : "bg-gray-600"
+                }`}
                 onClick={() => handleOptionSelect(optionB)}
               >
                 {optionB}
               </button>
             </div>
             <div className="mb-4">
-              <label className="block mb-2">Bet Amount: {betAmount.toFixed(1)} FLOW</label>
+              <label className="block mb-2">
+                Bet Amount: {betAmount.toFixed(1)} FLOW
+              </label>
               <input
                 type="range"
                 min="1"
