@@ -1,18 +1,23 @@
+// components/ClientOnly.jsx
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 
-export default function Page() {
+export default function ClientOnly() {
   const { address, isConnected, chain } = useAccount();
-  useEffect(() => {}, [isConnected]);
-  return (
-    <>
-      <p>wagmi connected: {isConnected ? "true" : "false"}</p>
-      <p>wagmi address: {address}</p>
-      <p>wagmi network: {chain?.id}</p>
-      <p>Send to ETH address</p>
+  const [mounted, setMounted] = useState(false);
 
-      <button type="submit">Send</button>
-    </>
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  return (
+    <div className="bold">
+      wagmi connected: {isConnected ? "true" : "false"}
+      wagmi address: {address}
+      wagmi network: {chain?.id}
+    </div>
   );
 }

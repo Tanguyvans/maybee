@@ -1,15 +1,17 @@
-"use client"; // Add this directive for the Client component
-
+"use client";
 import "./globals.css";
 
 import { Inter } from "next/font/google";
 import {
   DynamicContextProvider,
-  EthereumWalletConnectors,
-} from "../lib/dynamic"; // Ensure client-side logic only
-import { createConfig, http, WagmiProvider } from "wagmi";
-import { flowTestnet } from "viem/chains";
+  DynamicWidget,
+} from "@dynamic-labs/sdk-react-core";
+import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
+import { DynamicWagmiConnector } from "@dynamic-labs/wagmi-connector";
+import { createConfig, WagmiProvider, useAccount } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { http } from "viem";
+import { flowTestnet } from "viem/chains";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,7 +21,7 @@ const config = createConfig({
   chains: [flowTestnet],
   multiInjectedProviderDiscovery: false,
   transports: {
-    [flowTestnet.id]: http("https://testnet.evm.nodes.onflow.org"),
+    [flowTestnet.id]: http(),
   },
 });
 
@@ -47,7 +49,9 @@ export default function RootLayout({
       >
         <WagmiProvider config={config}>
           <QueryClientProvider client={queryClient}>
-            <body className={inter.className}>{children}</body>
+            <DynamicWagmiConnector>
+              <body className={inter.className}>{children}</body>
+            </DynamicWagmiConnector>
           </QueryClientProvider>
         </WagmiProvider>
       </DynamicContextProvider>
