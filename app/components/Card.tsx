@@ -139,7 +139,6 @@ export default function Card({
               <button
                 className="px-4 py-2 bg-green-600 rounded"
                 onClick={handleBetSubmit}
-                disabled={!selectedOption || betAmount < 0.1}
               >
                 Place Bet
               </button>
