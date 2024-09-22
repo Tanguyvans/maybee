@@ -53,7 +53,7 @@ const mockMarkets = [
 
 export default function Join({ onBack, isWalletConnected }: JoinProps) {
   const router = useRouter();
-  const [cardData, setCardData] = useState([]);
+  const [cardData, setCardData] = useState<any>([]);
   const getAllMarketInfo = async () => {
     try {
       const response = await axios.get(
@@ -63,7 +63,7 @@ export default function Join({ onBack, isWalletConnected }: JoinProps) {
         let data = JSON.parse(response.data.data);
         setCardData(data);
       } else {
-        setCardData(response.data.data);
+        setCardData(mockMarkets);
       }
     } catch (error) {
       console.error("Error fetching market info:", error);
