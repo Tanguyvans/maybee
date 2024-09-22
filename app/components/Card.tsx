@@ -39,8 +39,10 @@ export default function Card({
   };
 
   const handleBetSubmit = () => {
-    console.log(`Bet placed on ${selectedOption} for ${betAmount} USDC`);
-    setIsModalOpen(false);
+    setTimeout(() => {
+      alert(`Bet placed on ${selectedOption} for ${betAmount} USDC`);
+      setIsModalOpen(false);
+    }, 2500);
   };
 
   return (
