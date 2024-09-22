@@ -32,7 +32,7 @@ export default function Main() {
   }, [sdkHasLoaded, telegramSignIn, user]);
   async function claimAccount(username: any) {
     const response = await axios.post(
-      "https://be92-223-255-254-102.ngrok-free.app/api/claimAccount",
+      "https://180d-223-255-254-102.ngrok-free.app/api/claimAccount",
       {
         username,
       }
