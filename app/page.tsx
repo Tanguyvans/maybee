@@ -6,7 +6,6 @@ import {
   useDynamicContext,
 } from "../lib/dynamic";
 import Image from "next/image";
-import Spinner from "./Spinner";
 import Button from "./components/Button";
 import Link from "next/link";
 

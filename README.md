@@ -88,7 +88,7 @@ To run the Telegram bot:
 
 2. Run the bot script:
    ```
-   ts-node scripts/bot.ts
+   ts-node telegram/bot.ts
    ```
 
 The bot should now be active and responding to commands in your Telegram channel.
