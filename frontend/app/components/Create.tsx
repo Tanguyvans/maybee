@@ -43,7 +43,7 @@ export default function Create({ onBack }: { onBack: () => void }) {
       const signer = await provider.getSigner();
       console.log("Signer address:", await signer.getAddress());
   
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, MAYBEE_ABI, signer);
+      const contract = new ethers.Contract(CONTRACT_ADDRESS as string, MAYBEE_ABI, signer);
   
       // Convert the expiration date to a Unix timestamp
       const expirationTimestamp = Math.floor(new Date(date).getTime() / 1000);
@@ -57,7 +57,7 @@ export default function Create({ onBack }: { onBack: () => void }) {
       router.push("/");
     } catch (error) {
       console.error("Error creating market:", error);
-      alert(`Error creating market: ${error.message}`);
+      alert(`Error creating market: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 
