@@ -2,6 +2,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "./Button";
 import axios from "axios";
+import { ethers } from "ethers";
+import { sepolia } from 'wagmi/chains';
+
+import MAYBEE_ABI from '../abi/MayBee.json';
+
+const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
 
 export default function Create({ onBack }: { onBack: () => void }) {
   const router = useRouter();
@@ -15,24 +21,43 @@ export default function Create({ onBack }: { onBack: () => void }) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically send the data to your backend
-    console.log("Creating new card:", { title, date });
-
-    // Show success alert
-
+    
     try {
-      const response = await axios.post(
-        "https://180d-223-255-254-102.ngrok-free.app/api/createmarket",
-        {
-          description: title,
-        }
-      ); // Change URL based on your backend server's URL
-      console.log(response);
+      if (typeof window.ethereum === 'undefined') {
+        throw new Error("MetaMask n'est pas installé ou n'est pas accessible");
+      }
+  
+      // Request account access
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      console.log("User address:", accounts[0]);
+  
+      // Utilisez BrowserProvider au lieu de Web3Provider
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      
+      // Assurez-vous que l'utilisateur est sur le réseau Sepolia
+      const network = await provider.getNetwork();
+      if (network.chainId !== BigInt(sepolia.id)) {
+        throw new Error("Veuillez vous connecter au réseau Sepolia");
+      }
+  
+      const signer = await provider.getSigner();
+      console.log("Signer address:", await signer.getAddress());
+  
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, MAYBEE_ABI, signer);
+  
+      // Convert the expiration date to a Unix timestamp
+      const expirationTimestamp = Math.floor(new Date(date).getTime() / 1000);
+  
+      // Call the createMarket function
+      const tx = await contract.createMarket(title, expirationTimestamp);
+      await tx.wait();
+  
+      console.log("Market created successfully!");
       alert("Market created successfully!");
       router.push("/");
     } catch (error) {
-      console.error("Error fetching market info:", error);
-      throw error; // Or handle it accordingly
+      console.error("Error creating market:", error);
+      alert(`Error creating market: ${error.message}`);
     }
   };
 
