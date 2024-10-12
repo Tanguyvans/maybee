@@ -1,1 +1,3 @@
 source .env
+
+ts-node telegram/bot.ts
