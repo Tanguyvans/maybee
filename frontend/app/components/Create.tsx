@@ -52,7 +52,6 @@ export default function Create({ onBack }: { onBack: () => void }) {
       const tx = await contract.createMarket(title, expirationTimestamp);
       await tx.wait();
   
-      console.log("Market created successfully!");
       alert("Market created successfully!");
       router.push("/");
     } catch (error) {

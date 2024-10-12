@@ -19,6 +19,8 @@ const config = {
 
   // Web app URLs
   MAYBEE_APP_URL: 't.me/maybee01_bot/maybee_app',
+  MAYBEE_APP_URL_CREATE: 't.me/maybee01_bot/maybee_app_create',
+  
   HOTTEST_1H_APP_URL: 't.me/maybee01_bot/maybee_app_hottest1h',
   HOTTEST_24H_APP_URL: 't.me/maybee01_bot/maybee_app_hottest24h',
 

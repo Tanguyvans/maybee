@@ -1,3 +1,4 @@
+const fs = require('fs');
 const jwt = require("jsonwebtoken");
 const path = require('path');
 const config = require('../config');
@@ -19,7 +20,42 @@ const welcomeMessage = `
 *Are you ready to play? 🕹️*
 `;
 
+async function sendImageToChat(ctx, chatId, imagePath, caption = '') {
+  try {
+    // Check if the file exists
+    if (!fs.existsSync(imagePath)) {
+      console.error('Image file not found:', imagePath);
+      return;
+    }
+
+    // Send the photo
+    await ctx.telegram.sendPhoto(chatId, 
+      { source: fs.createReadStream(imagePath) },
+      { 
+        caption: caption,
+        parse_mode: 'Markdown'
+      }
+    );
+
+    console.log(`Image sent successfully to chat ID: ${chatId}`);
+  } catch (error) {
+    console.error('Error sending image:', error);
+  }
+}
+
 exports.handleStart = async (ctx) => {
+  // Obtenir l'ID du chat (groupe ou privé)
+  const chatId = ctx.chat.id;
+
+  // Obtenir le type de chat
+  const chatType = ctx.chat.type;
+  
+  // Obtenir le titre du groupe (si c'est un groupe)
+  const groupTitle = ctx.chat.title || 'Private Chat';
+
+  console.log(`Command executed in: ${chatType === 'private' ? 'Private Chat' : `Group "${groupTitle}"`}`);
+  console.log(`Chat ID: ${chatId}`);
+  
   const userData = {
     authDate: Math.floor(new Date().getTime()),
     firstName: ctx.update.message.from.first_name,
@@ -49,23 +85,17 @@ exports.handleStart = async (ctx) => {
         [
           {
             text: "Open Mini Web App 🚀",
-            web_app: {
-              url: `${config.LOGIN_URL}/?telegramAuthToken=${encodedTelegramAuthToken}`,
-            },
+            url: `${config.MAYBEE_APP_URL}?telegramAuthToken=${encodedTelegramAuthToken}`,
           },
         ],
         [
           {
             text: "Create 🆕",
-            web_app: {
-              url: `${config.LOGIN_URL}/create?telegramAuthToken=${encodedTelegramAuthToken}`,
-            },
+            url: `${config.MAYBEE_APP_URL_CREATE}?telegramAuthToken=${encodedTelegramAuthToken}`,
           },
           {
             text: "Join 🤝",
-            web_app: {
-              url: `${config.LOGIN_URL}/join?telegramAuthToken=${encodedTelegramAuthToken}`,
-            },
+            url: `${config.MAYBEE_APP_URL}/join?telegramAuthToken=${encodedTelegramAuthToken}`,
           },
         ],
       ],
@@ -81,6 +111,12 @@ exports.handleStart = async (ctx) => {
       disable_web_page_preview: true
     }
   );
+
+  const imagePath = path.join(__dirname, '..', config.IMAGE_PATH);
+  const caption = "Response message";
+
+  await sendImageToChat(ctx, chatId, imagePath, caption);
+
 };
 
 exports.handleTestMessage = async (ctx) => {
