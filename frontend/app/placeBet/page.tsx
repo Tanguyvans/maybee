@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { DynamicWidget, useTelegramLogin, useDynamicContext } from "../../lib/dynamic";
 import Spinner from "../Spinner";
 import Join from '../components/Join';
-import { useLaunchParams } from "@telegram-apps/sdk-react";
 
 export default function JoinPage() {
   const { sdkHasLoaded, user } = useDynamicContext();
@@ -11,23 +10,17 @@ export default function JoinPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [groupId, setGroupId] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
-  const lp = useLaunchParams();
 
   useEffect(() => {
     setIsClient(true);
-  }, []);
-
-  useEffect(() => {
-    if (!sdkHasLoaded || !isClient) return;
-
-    const initializeComponent = async () => {
-      try {
-        if (!user) {
-          await telegramSignIn({ forceCreateUser: true });
-        }
-
-        if (lp?.startParam) {
-          const [encodedGroupId] = lp.startParam.split("__");
+    
+    // Fonction pour décoder les paramètres de l'URL
+    const decodeUrlParams = () => {
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        const startParam = params.get('start_param');
+        if (startParam) {
+          const [encodedGroupId] = startParam.split("__");
           if (encodedGroupId) {
             const decodedGroupId = atob(encodedGroupId);
             console.log("Decoded Group ID:", decodedGroupId);
@@ -38,6 +31,20 @@ export default function JoinPage() {
         } else {
           console.log("No start_param available");
         }
+      }
+    };
+
+    decodeUrlParams();
+  }, []);
+
+  useEffect(() => {
+    if (!sdkHasLoaded || !isClient) return;
+
+    const initializeComponent = async () => {
+      try {
+        if (!user) {
+          await telegramSignIn({ forceCreateUser: true });
+        }
       } catch (error) {
         console.error("Error in initializeComponent:", error);
       } finally {
@@ -46,7 +53,7 @@ export default function JoinPage() {
     };
 
     initializeComponent();
-  }, [sdkHasLoaded, telegramSignIn, user, isClient, lp]);
+  }, [sdkHasLoaded, telegramSignIn, user, isClient]);
 
   const isWalletConnected = !!user;
 
