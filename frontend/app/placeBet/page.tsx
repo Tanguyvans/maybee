@@ -10,10 +10,14 @@ export default function JoinPage() {
   const { telegramSignIn } = useTelegramLogin();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [groupId, setGroupId] = useState<string | null>(null);
-  const lp = useLaunchParams();
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    if (!sdkHasLoaded) return;
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (!sdkHasLoaded || !isClient) return;
 
     const initializeComponent = async () => {
       try {
@@ -21,6 +25,8 @@ export default function JoinPage() {
           await telegramSignIn({ forceCreateUser: true });
         }
 
+        // Déplacez la logique de useLaunchParams ici
+        const lp = useLaunchParams();
         if (lp?.startParam) {
           const [encodedGroupId] = lp.startParam.split("__");
           if (encodedGroupId) {
@@ -41,9 +47,13 @@ export default function JoinPage() {
     };
 
     initializeComponent();
-  }, [sdkHasLoaded, telegramSignIn, user, lp]);
+  }, [sdkHasLoaded, telegramSignIn, user, isClient]);
 
   const isWalletConnected = !!user;
+
+  if (!isClient) {
+    return null; // ou un placeholder pour le rendu côté serveur
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black flex flex-col text-white">
