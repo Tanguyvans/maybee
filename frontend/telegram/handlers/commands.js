@@ -79,28 +79,35 @@ exports.handleStart = async (ctx) => {
 
   const encodedTelegramAuthToken = encodeURIComponent(telegramAuthToken);
 
+  const isGroup = chatType === 'group' || chatType === 'supergroup';
+
   const keyboard = {
     reply_markup: {
       inline_keyboard: [
         [
           {
             text: "Open Mini Web App 🚀",
-            url: `${config.MAYBEE_APP_URL}?telegramAuthToken=${encodedTelegramAuthToken}`,
+            url: `${config.MAYBEE_APP_URL}?telegramAuthToken=${encodedTelegramAuthToken}&chatId=${chatId}`,
           },
         ],
         [
           {
             text: "Create 🆕",
-            url: `${config.MAYBEE_APP_URL_CREATE}?telegramAuthToken=${encodedTelegramAuthToken}`,
+            url: `${config.MAYBEE_APP_URL_CREATE}?telegramAuthToken=${encodedTelegramAuthToken}&chatId=${chatId}`,
           },
           {
             text: "Join 🤝",
-            url: `${config.MAYBEE_APP_URL}/join?telegramAuthToken=${encodedTelegramAuthToken}`,
+            url: `${config.MAYBEE_APP_URL}/join?telegramAuthToken=${encodedTelegramAuthToken}&chatId=${chatId}`,
           },
         ],
       ],
     },
   };
+
+  // Si ce n'est pas un groupe, supprimez le bouton "Create"
+  if (!isGroup) {
+    keyboard.reply_markup.inline_keyboard[1] = keyboard.reply_markup.inline_keyboard[1].filter(button => button.text !== "Create 🆕");
+  }
 
   await ctx.replyWithPhoto(
     { source: path.join(__dirname, '..', config.IMAGE_PATH) },
@@ -116,7 +123,6 @@ exports.handleStart = async (ctx) => {
   const caption = "Response message";
 
   await sendImageToChat(ctx, chatId, imagePath, caption);
-
 };
 
 exports.handleTestMessage = async (ctx) => {
