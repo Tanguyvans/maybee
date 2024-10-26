@@ -11,6 +11,7 @@ export default function JoinPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [groupId, setGroupId] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
+  const lp = useLaunchParams();
 
   useEffect(() => {
     setIsClient(true);
@@ -25,8 +26,6 @@ export default function JoinPage() {
           await telegramSignIn({ forceCreateUser: true });
         }
 
-        // Déplacez la logique de useLaunchParams ici
-        const lp = useLaunchParams();
         if (lp?.startParam) {
           const [encodedGroupId] = lp.startParam.split("__");
           if (encodedGroupId) {
@@ -47,7 +46,7 @@ export default function JoinPage() {
     };
 
     initializeComponent();
-  }, [sdkHasLoaded, telegramSignIn, user, isClient]);
+  }, [sdkHasLoaded, telegramSignIn, user, isClient, lp]);
 
   const isWalletConnected = !!user;
 
