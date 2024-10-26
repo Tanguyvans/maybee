@@ -36,27 +36,48 @@ export default function Join({ onBack, isWalletConnected, groupId }: JoinProps) 
   const getMarketsForGroup = async () => {
     try {
       if (typeof window.ethereum !== 'undefined' && groupId) {
+        console.log("Fetching markets for group:", groupId);
         const provider = new ethers.BrowserProvider(window.ethereum);
         const contract = new ethers.Contract(CONTRACT_ADDRESS!, MAYBEE_ABI, provider);
-
+  
         const groupIdNumber = parseInt(groupId);
+        console.log("Calling getMarketsForGroup with:", groupIdNumber);
         const marketIds = await contract.getMarketsForGroup(groupIdNumber);
-
+        console.log("Received market IDs:", marketIds);
+  
         const marketsData = await Promise.all(
           marketIds.map(async (id: number) => {
+            console.log("Fetching info for market ID:", id);
             const marketInfo = await contract.getMarketInfo(id);
+            console.log("Received market info:", marketInfo);
+  
+            // Fonction pour convertir la date d'expiration en objet Date
+            const convertExpirationDate = (expDate: any) => {
+              if (typeof expDate === 'number') {
+                return new Date(expDate * 1000);
+              } else if (expDate && typeof expDate.toNumber === 'function') {
+                return new Date(expDate.toNumber() * 1000);
+              } else if (expDate instanceof Date) {
+                return expDate;
+              } else {
+                console.warn(`Unexpected expirationDate format for market ${id}:`, expDate);
+                return new Date(); // Retourne la date actuelle comme fallback
+              }
+            };
+  
             return {
               id,
               description: marketInfo.description,
               totalYesAmount: ethers.formatEther(marketInfo.totalYesAmount),
               totalNoAmount: ethers.formatEther(marketInfo.totalNoAmount),
-              expirationDate: new Date(marketInfo.expirationDate.toNumber() * 1000),
+              expirationDate: convertExpirationDate(marketInfo.expirationDate),
               isResolved: marketInfo.isResolved,
               outcome: marketInfo.outcome
             };
           })
         );
-
+  
+        console.log("Processed market data:", marketsData);
         setMarkets(marketsData);
       }
     } catch (error) {
