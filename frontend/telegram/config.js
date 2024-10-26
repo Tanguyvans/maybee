@@ -11,8 +11,8 @@ const config = {
   HOTTEST_1H_TOPIC_ID: 4,
 
   // Update intervals (in milliseconds)
-  HOTTEST_1H_UPDATE_INTERVAL: 600000, // 10 minutes
-  HOTTEST_24H_UPDATE_INTERVAL: 600000, // 10 minutes
+  HOTTEST_1H_UPDATE_INTERVAL: 60000000, // 10 minutes
+  HOTTEST_24H_UPDATE_INTERVAL: 60000000, // 10 minutes
 
   // Paths
   IMAGE_PATH: './image.png',

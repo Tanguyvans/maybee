@@ -47,6 +47,9 @@ exports.handleStart = async (ctx) => {
   // Obtenir l'ID du chat (groupe ou privé)
   const chatId = ctx.chat.id;
 
+  // Encoder chatId en base64
+  const encodedChatId = Buffer.from(chatId.toString()).toString('base64');
+
   // Obtenir le type de chat
   const chatType = ctx.chat.type;
   
@@ -55,6 +58,7 @@ exports.handleStart = async (ctx) => {
 
   console.log(`Command executed in: ${chatType === 'private' ? 'Private Chat' : `Group "${groupTitle}"`}`);
   console.log(`Chat ID: ${chatId}`);
+  console.log(`Encoded Chat ID: ${encodedChatId}`);
   
   const userData = {
     authDate: Math.floor(new Date().getTime()),
@@ -87,27 +91,28 @@ exports.handleStart = async (ctx) => {
         [
           {
             text: "Open Mini Web App 🚀",
-            url: `${config.MAYBEE_APP_URL}?telegramAuthToken=${encodedTelegramAuthToken}&chatId=${chatId}`,
+            url: `${config.MAYBEE_APP_URL}?telegramAuthToken=${encodedTelegramAuthToken}&cid=${encodedChatId}`,
+          },
+        ],
+        [
+          {
+            text: `Your chat id: ${chatId}`,
+            url: `${config.MAYBEE_APP_URL}?telegramAuthToken=${encodedTelegramAuthToken}&cid=${encodedChatId}`,
           },
         ],
         [
           {
             text: "Create 🆕",
-            url: `${config.MAYBEE_APP_URL_CREATE}?telegramAuthToken=${encodedTelegramAuthToken}&chatId=${chatId}`,
+            web_app: `https://${config.MAYBEE_APP_URL_CREATE}?startapp=${encodedChatId}`,
           },
           {
             text: "Join 🤝",
-            url: `${config.MAYBEE_APP_URL}/join?telegramAuthToken=${encodedTelegramAuthToken}&chatId=${chatId}`,
+            url: `${config.MAYBEE_APP_URL}/join?cid=${encodedChatId}`,
           },
         ],
       ],
     },
   };
-
-  // Si ce n'est pas un groupe, supprimez le bouton "Create"
-  if (!isGroup) {
-    keyboard.reply_markup.inline_keyboard[1] = keyboard.reply_markup.inline_keyboard[1].filter(button => button.text !== "Create 🆕");
-  }
 
   await ctx.replyWithPhoto(
     { source: path.join(__dirname, '..', config.IMAGE_PATH) },
