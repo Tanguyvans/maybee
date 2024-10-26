@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Button from "./Button";
-import axios from "axios";
 import { ethers } from "ethers";
 import { sepolia } from 'wagmi/chains';
 
@@ -9,11 +8,16 @@ import MAYBEE_ABI from '../abi/MayBee.json';
 
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
 
-export default function Create({ onBack }: { onBack: () => void }) {
+interface CreateProps {
+  onBack: () => void;
+  groupId: string | null;
+}
+
+export default function Create({ onBack, groupId }: CreateProps) {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleBack = () => {
     router.push("/");
@@ -22,19 +26,20 @@ export default function Create({ onBack }: { onBack: () => void }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!groupId) {
+      alert("No Telegram group ID available. Cannot create market.");
+      return;
+    }
+
+    setIsLoading(true);
+
     try {
       if (typeof window.ethereum === 'undefined') {
         throw new Error("MetaMask n'est pas installé ou n'est pas accessible");
       }
   
-      // Request account access
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      console.log("User address:", accounts[0]);
-  
-      // Utilisez BrowserProvider au lieu de Web3Provider
       const provider = new ethers.BrowserProvider(window.ethereum);
       
-      // Assurez-vous que l'utilisateur est sur le réseau Sepolia
       const network = await provider.getNetwork();
       if (network.chainId !== BigInt(sepolia.id)) {
         throw new Error("Veuillez vous connecter au réseau Sepolia");
@@ -45,11 +50,10 @@ export default function Create({ onBack }: { onBack: () => void }) {
   
       const contract = new ethers.Contract(CONTRACT_ADDRESS as string, MAYBEE_ABI, signer);
   
-      // Convert the expiration date to a Unix timestamp
       const expirationTimestamp = Math.floor(new Date(date).getTime() / 1000);
   
-      // Call the createMarket function
-      const tx = await contract.createMarket(title, expirationTimestamp);
+      // Use the Telegram groupId when creating the market
+      const tx = await contract.createMarket(title, expirationTimestamp, BigInt(groupId));
       await tx.wait();
   
       alert("Market created successfully!");
@@ -57,6 +61,8 @@ export default function Create({ onBack }: { onBack: () => void }) {
     } catch (error) {
       console.error("Error creating market:", error);
       alert(`Error creating market: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -103,17 +109,24 @@ export default function Create({ onBack }: { onBack: () => void }) {
           <Button
             onClick={handleBack}
             className="bg-gray-600 hover:bg-gray-700 transition duration-150 ease-in-out"
+            disabled={isLoading}
           >
             Back
           </Button>
           <Button
             type="submit"
             className="bg-blue-600 hover:bg-blue-700 transition duration-150 ease-in-out"
+            disabled={isLoading}
           >
-            Create Market
+            {isLoading ? "Creating..." : "Create Market"}
           </Button>
         </div>
       </form>
+      {groupId && (
+        <div className="mt-4 text-sm text-gray-400">
+          Creating market for Telegram group: {groupId}
+        </div>
+      )}
     </div>
   );
 }

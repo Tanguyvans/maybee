@@ -63,7 +63,7 @@ export default function CreateContent() {
         <Spinner />
       ) : ( 
         <>
-          <Create onBack={() => router.push("/Home")} />
+          <Create onBack={() => router.push("/Home")} groupId={groupId} />
           <div className="mt-4 p-2 bg-gray-800 rounded">
             Telegram Group ID: {groupId ? groupId : "No group ID available"}
           </div>
