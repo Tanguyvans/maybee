@@ -19,13 +19,7 @@ export default function CreateContent() {
   const [groupId, setGroupId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   
-  let lp: any;
-  try {
-    lp = useLaunchParams();
-  } catch (e) {
-    console.error("Error using useLaunchParams:", e);
-    // Handle the error, maybe set a state to show an error message
-  }
+  const lp = useLaunchParams();
 
   useEffect(() => {
     if (!sdkHasLoaded) return;
