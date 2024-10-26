@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { DynamicWidget, useTelegramLogin, useDynamicContext } from "../../lib/dynamic";
 import Spinner from "../Spinner";
 import Join from '../components/Join';
+import { useLaunchParams } from "@telegram-apps/sdk-react";
 
 export default function JoinPage() {
   const { sdkHasLoaded, user } = useDynamicContext();
@@ -10,32 +11,25 @@ export default function JoinPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [groupId, setGroupId] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
+  
+  const lp = useLaunchParams();
 
   useEffect(() => {
     setIsClient(true);
     
-    // Fonction pour décoder les paramètres de l'URL
-    const decodeUrlParams = () => {
-      if (typeof window !== 'undefined') {
-        const params = new URLSearchParams(window.location.search);
-        const startParam = params.get('start_param');
-        if (startParam) {
-          const [encodedGroupId] = startParam.split("__");
-          if (encodedGroupId) {
-            const decodedGroupId = atob(encodedGroupId);
-            console.log("Decoded Group ID:", decodedGroupId);
-            setGroupId(decodedGroupId);
-          } else {
-            console.log("No group ID available in start_param");
-          }
-        } else {
-          console.log("No start_param available");
-        }
+    if (lp?.startParam) {
+      const [encodedGroupId] = lp.startParam.split("__");
+      if (encodedGroupId) {
+        const decodedGroupId = atob(encodedGroupId);
+        console.log("Decoded Group ID:", decodedGroupId);
+        setGroupId(decodedGroupId);
+      } else {
+        console.log("No group ID available in start_param");
       }
-    };
-
-    decodeUrlParams();
-  }, []);
+    } else {
+      console.log("No start_param available");
+    }
+  }, [lp]);
 
   useEffect(() => {
     if (!sdkHasLoaded || !isClient) return;
