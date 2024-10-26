@@ -3,24 +3,45 @@ import { useEffect, useState } from "react";
 import { DynamicWidget, useTelegramLogin, useDynamicContext } from "../../lib/dynamic";
 import Spinner from "../Spinner";
 import Join from '../components/Join';
+import { useLaunchParams } from "@telegram-apps/sdk-react";
 
 export default function JoinPage() {
   const { sdkHasLoaded, user } = useDynamicContext();
   const { telegramSignIn } = useTelegramLogin();
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [groupId, setGroupId] = useState<string | null>(null);
+  const lp = useLaunchParams();
 
   useEffect(() => {
     if (!sdkHasLoaded) return;
 
-    const signIn = async () => {
-      if (!user) {
-        await telegramSignIn({ forceCreateUser: true });
+    const initializeComponent = async () => {
+      try {
+        if (!user) {
+          await telegramSignIn({ forceCreateUser: true });
+        }
+
+        if (lp?.startParam) {
+          const [encodedGroupId] = lp.startParam.split("__");
+          if (encodedGroupId) {
+            const decodedGroupId = atob(encodedGroupId);
+            console.log("Decoded Group ID:", decodedGroupId);
+            setGroupId(decodedGroupId);
+          } else {
+            console.log("No group ID available in start_param");
+          }
+        } else {
+          console.log("No start_param available");
+        }
+      } catch (error) {
+        console.error("Error in initializeComponent:", error);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
 
-    signIn();
-  }, [sdkHasLoaded, telegramSignIn, user]);
+    initializeComponent();
+  }, [sdkHasLoaded, telegramSignIn, user, lp]);
 
   const isWalletConnected = !!user;
 
@@ -33,7 +54,7 @@ export default function JoinPage() {
           </div>
         ) : (
           <div className="h-full overflow-y-auto py-4">
-            <Join onBack={() => window.history.back()} isWalletConnected={isWalletConnected} />
+            <Join onBack={() => window.history.back()} isWalletConnected={isWalletConnected} groupId={groupId} />
           </div>
         )}
       </div>

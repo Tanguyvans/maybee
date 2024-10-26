@@ -8,61 +8,67 @@ import MAYBEE_ABI from '../abi/MayBee.json';
 interface JoinProps {
   onBack: () => void;
   isWalletConnected: boolean;
+  groupId: string | null;
 }
 
 interface Market {
   id: number;
-  title: string;
-  optionA: string;
-  optionB: string;
-  percentageA: number;
-  percentageB: number;
-  totalBet: number;
-  expirationDate: number;
+  description: string;
+  totalYesAmount: string;
+  totalNoAmount: string;
+  expirationDate: Date;
+  isResolved: boolean;
+  outcome: boolean;
 }
 
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
 
-export default function Join({ onBack, isWalletConnected }: JoinProps) {
+export default function Join({ onBack, isWalletConnected, groupId }: JoinProps) {
   const router = useRouter();
   const [markets, setMarkets] = useState<Market[]>([]);
 
   useEffect(() => {
-    if (isWalletConnected) {
-      getAllMarketInfo();
+    if (isWalletConnected && groupId) {
+      getMarketsForGroup();
     }
-  }, [isWalletConnected]);
+  }, [isWalletConnected, groupId]);
 
-  const getAllMarketInfo = async () => {
+  const getMarketsForGroup = async () => {
     try {
-      if (typeof window.ethereum !== 'undefined') {
+      if (typeof window.ethereum !== 'undefined' && groupId) {
         const provider = new ethers.BrowserProvider(window.ethereum);
         const contract = new ethers.Contract(CONTRACT_ADDRESS!, MAYBEE_ABI, provider);
 
-        const marketData = await contract.getAllMarkets();
-        
-        const formattedMarkets: Market[] = marketData.descriptions.map((desc: string, index: number) => ({
-          id: index,
-          title: desc,
-          optionA: "Yes",
-          optionB: "No",
-          percentageA: calculatePercentage(marketData.totalYesAmounts[index], marketData.totalNoAmounts[index]),
-          percentageB: calculatePercentage(marketData.totalNoAmounts[index], marketData.totalYesAmounts[index]),
-          totalBet: Number(marketData.totalYesAmounts[index]) + Number(marketData.totalNoAmounts[index]),
-          expirationDate: Number(marketData.expirationDates[index])
-        }));
+        const groupIdNumber = parseInt(groupId);
+        const marketIds = await contract.getMarketsForGroup(groupIdNumber);
 
-        setMarkets(formattedMarkets);
+        const marketsData = await Promise.all(
+          marketIds.map(async (id: number) => {
+            const marketInfo = await contract.getMarketInfo(id);
+            return {
+              id,
+              description: marketInfo.description,
+              totalYesAmount: ethers.formatEther(marketInfo.totalYesAmount),
+              totalNoAmount: ethers.formatEther(marketInfo.totalNoAmount),
+              expirationDate: new Date(marketInfo.expirationDate.toNumber() * 1000),
+              isResolved: marketInfo.isResolved,
+              outcome: marketInfo.outcome
+            };
+          })
+        );
+
+        setMarkets(marketsData);
       }
     } catch (error) {
       console.error("Error fetching market info:", error);
     }
   };
 
-  const calculatePercentage = (amount: ethers.BigNumberish, total: ethers.BigNumberish) => {
-    const amountNum = Number(amount);
-    const totalNum = Number(total);
-    return totalNum === 0 ? 0 : Math.round((amountNum / (amountNum + totalNum)) * 100);
+  const calculatePercentage = (yesAmount: string, noAmount: string) => {
+    const yes = parseFloat(yesAmount);
+    const no = parseFloat(noAmount);
+    const total = yes + no;
+    return total === 0 ? 0 : Math.round((yes / total) * 100);
   };
 
   const handleBack = () => {
@@ -74,7 +80,17 @@ export default function Join({ onBack, isWalletConnected }: JoinProps) {
       <h2 className="text-2xl font-bold mb-4">Join a Market</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
         {markets.map((market) => (
-          <Card key={market.id} {...market} isClickable={isWalletConnected} />
+          <Card 
+            key={market.id} 
+            id={market.id}
+            title={market.description}
+            optionA="Yes"
+            optionB="No"
+            percentageA={calculatePercentage(market.totalYesAmount, market.totalNoAmount)}
+            percentageB={calculatePercentage(market.totalNoAmount, market.totalYesAmount)}
+            totalBet={parseFloat(market.totalYesAmount) + parseFloat(market.totalNoAmount)} 
+            isClickable={isWalletConnected && !market.isResolved}
+          />
         ))}
       </div>
       <Button onClick={handleBack}>Back to Home</Button>
