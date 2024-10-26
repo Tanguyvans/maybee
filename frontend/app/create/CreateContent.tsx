@@ -17,38 +17,51 @@ export default function CreateContent() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const router = useRouter();
   const [groupId, setGroupId] = useState<string | null>(null);
-  const lp = useLaunchParams();
+  const [error, setError] = useState<string | null>(null);
+  
+  let lp: any;
+  try {
+    lp = useLaunchParams();
+  } catch (e) {
+    console.error("Error using useLaunchParams:", e);
+    // Handle the error, maybe set a state to show an error message
+  }
 
   useEffect(() => {
     if (!sdkHasLoaded) return;
 
-    const signIn = async () => {
-      if (!user) {
-        await telegramSignIn({ forceCreateUser: true });
+    const initializeComponent = async () => {
+      try {
+        if (!user) {
+          await telegramSignIn({ forceCreateUser: true });
+        }
+
+        if (lp?.startParam) {
+          const [encodedGroupId] = lp.startParam.split("__");
+          if (encodedGroupId) {
+            const decodedGroupId = atob(encodedGroupId);
+            console.log("Decoded Group ID:", decodedGroupId);
+            setGroupId(decodedGroupId);
+          } else {
+            console.log("No group ID available in start_param");
+          }
+        } else {
+          console.log("No start_param available");
+        }
+      } catch (error) {
+        console.error("Error in initializeComponent:", error);
+        setError("An error occurred while initializing the component.");
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
 
-    signIn();
+    initializeComponent();
+  }, [sdkHasLoaded, telegramSignIn, user, lp]);
 
-    // Récupérer et décoder le groupId du paramètre de démarrage Telegram
-    if (lp.startParam) {
-      const [encodedGroupId] = lp.startParam.split("__");
-      if (encodedGroupId) {
-        try {
-          const decodedGroupId = atob(encodedGroupId);
-          console.log("Decoded Group ID:", decodedGroupId);
-          setGroupId(decodedGroupId);
-        } catch (error) {
-          console.error("Error decoding group ID:", error);
-        }
-      } else {
-        console.log("No group ID available in start_param");
-      }
-    } else {
-      console.log("No start_param available");
-    }
-  }, [sdkHasLoaded, telegramSignIn, user, lp.startParam]);
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
 
   return (
     <>
