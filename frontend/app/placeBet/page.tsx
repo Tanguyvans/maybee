@@ -12,11 +12,14 @@ export default function JoinPage() {
   const [groupId, setGroupId] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
   
-  const lp = useLaunchParams();
-
   useEffect(() => {
     setIsClient(true);
-    
+  }, []);
+
+  useEffect(() => {
+    if (!isClient) return;
+
+    const lp = useLaunchParams();
     if (lp?.startParam) {
       const [encodedGroupId] = lp.startParam.split("__");
       if (encodedGroupId) {
@@ -29,7 +32,7 @@ export default function JoinPage() {
     } else {
       console.log("No start_param available");
     }
-  }, [lp]);
+  }, [isClient]);
 
   useEffect(() => {
     if (!sdkHasLoaded || !isClient) return;
