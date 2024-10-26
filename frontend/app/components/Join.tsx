@@ -78,6 +78,7 @@ export default function Join({ onBack, isWalletConnected, groupId }: JoinProps) 
   return (
     <div className="w-full max-w-4xl">
       <h2 className="text-2xl font-bold mb-4">Join a Market</h2>
+      <p>Group ID: {groupId || 'No group ID available'}</p> 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
         {markets.map((market) => (
           <Card 
