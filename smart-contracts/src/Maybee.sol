@@ -10,12 +10,7 @@ contract MayBee {
         bool isResolved;
         bool outcome;
         address admin;
-        uint256 groupId;
-    }
-
-    struct Group {
-        int64 telegramGroupId;
-        bool exists;
+        int64 groupId; // Changed to int64 to match Telegram group ID type
     }
 
     struct Bet {
@@ -25,11 +20,8 @@ contract MayBee {
 
     mapping(uint256 => Market) public markets;
     mapping(uint256 => mapping(address => Bet)) public userBets;
-    mapping(uint256 => Group) public groups;
-    mapping(int64 => uint256) public telegramToContractGroupId;
 
     uint256 public marketCount;
-    uint256 public groupCount;
 
     address public owner;
 
@@ -42,7 +34,6 @@ contract MayBee {
     event BetPlaced(uint256 marketId, address user, bool isYes, uint256 amount);
     event MarketResolved(uint256 marketId, bool outcome);
     event RewardClaimed(uint256 marketId, address user, uint256 amount);
-    event GroupCreated(uint256 groupId, int64 telegramGroupId);
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Only owner can perform this action");
@@ -70,20 +61,6 @@ contract MayBee {
         owner = msg.sender;
     }
 
-    function createGroup(int64 _telegramGroupId) external {
-        require(
-            telegramToContractGroupId[_telegramGroupId] == 0,
-            "Group already exists"
-        );
-        groupCount++;
-        groups[groupCount] = Group({
-            telegramGroupId: _telegramGroupId,
-            exists: true
-        });
-        telegramToContractGroupId[_telegramGroupId] = groupCount;
-        emit GroupCreated(groupCount, _telegramGroupId);
-    }
-
     function createMarket(
         string memory _description,
         uint256 _expirationDate,
@@ -94,9 +71,6 @@ contract MayBee {
             "Expiration date must be in the future"
         );
 
-        uint256 groupId = telegramToContractGroupId[_telegramGroupId];
-        require(groupId != 0, "Group does not exist");
-
         marketCount++;
         markets[marketCount] = Market({
             description: _description,
@@ -106,7 +80,7 @@ contract MayBee {
             isResolved: false,
             outcome: false,
             admin: msg.sender,
-            groupId: groupId
+            groupId: _telegramGroupId
         });
 
         emit MarketCreated(
@@ -126,8 +100,6 @@ contract MayBee {
         require(msg.value == _amount, "Sent ETH must match bet amount");
 
         Market storage market = markets[_marketId];
-        require(groups[market.groupId].exists, "Market does not exist");
-
         Bet storage userBet = userBets[_marketId][msg.sender];
 
         if (_isYes) {
@@ -193,7 +165,7 @@ contract MayBee {
             uint256 totalNoAmount,
             bool isResolved,
             bool outcome,
-            uint256 groupId
+            int64 groupId
         )
     {
         Market storage market = markets[_marketId];
@@ -211,14 +183,11 @@ contract MayBee {
     function getMarketsForGroup(
         int64 _telegramGroupId
     ) external view returns (uint256[] memory) {
-        uint256 groupId = telegramToContractGroupId[_telegramGroupId];
-        require(groupId != 0, "Group does not exist");
-
         uint256[] memory groupMarkets = new uint256[](marketCount);
         uint256 count = 0;
 
         for (uint256 i = 1; i <= marketCount; i++) {
-            if (markets[i].groupId == groupId) {
+            if (markets[i].groupId == _telegramGroupId) {
                 groupMarkets[count] = i;
                 count++;
             }

@@ -103,7 +103,7 @@ exports.handleStart = async (ctx) => {
         [
           {
             text: "Create 🆕",
-            web_app: `https://${config.MAYBEE_APP_URL_CREATE}?startapp=${encodedChatId}`,
+            url: `https://${config.MAYBEE_APP_URL_CREATE}?startapp=${encodedChatId}`,
           },
           {
             text: "Join 🤝",
