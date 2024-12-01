@@ -12,7 +12,7 @@ export default function PlaceBetContent() {
   const [groupId, setGroupId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   
-  const lp = "test" // useLaunchParams();
+  const lp = useLaunchParams();
 
   useEffect(() => {
     if (!sdkHasLoaded) return;
