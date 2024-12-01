@@ -15,6 +15,7 @@ const mockMarkets1h = [
     percentageA: 40,
     percentageB: 60,
     totalBet: 5000,
+    expirationDate: new Date(Date.now() + 60 * 60 * 1000), // 1 hour from now
   },
   // ... other markets for 1h
 ];
@@ -55,7 +56,15 @@ export default function Hottest1h() {
       <div className="container mx-auto p-4 flex flex-col items-center">
         <h1 className="text-2xl font-bold mb-6">Hottest Markets (1H)</h1>
         {mockMarkets1h.map(market => (
-          <Card key={market.id} {...market} isClickable={!!user} />
+          <Card 
+            key={market.id} 
+            {...market} 
+            isClickable={!!user}
+            onBetPlaced={async () => {
+              // Optional: Add refresh logic here
+              console.log('Bet placed');
+            }}
+          />
         ))}
         <div className="mt-6">
           <DynamicWidget />
