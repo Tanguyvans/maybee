@@ -58,7 +58,10 @@ export default function PlaceBetContent() {
         <Spinner />
       ) : (
         <>
-          <Join onBack={() => window.history.back()} isWalletConnected={isWalletConnected} groupId={groupId} />
+          <Join 
+            onBack={() => window.history.back()} 
+            isWalletConnected={isWalletConnected} 
+          />
           <div className="mt-4 p-2 bg-gray-800 rounded">
             Telegram Group ID: {groupId ? groupId : "No group ID available"}
           </div>
