@@ -4,7 +4,7 @@ import Button from "./Button";
 import { ethers } from "ethers";
 import { sepolia } from 'wagmi/chains';
 
-import MAYBEE_ABI from '../abi/MayBee.json';
+import MAYBEE_ABI from '../abi/BettingContract.json';
 
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
 
