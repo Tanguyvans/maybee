@@ -1,15 +1,8 @@
-import { useRouter } from "next/navigation";
-import Button from "./Button";
-import Card from "./Card";
 import { useEffect, useState } from "react";
 import { ethers } from 'ethers';
-import MAYBEE_ABI from '../abi/MayBee.json';
-
-interface JoinProps {
-  onBack: () => void;
-  isWalletConnected: boolean;
-  groupId: string | null;
-}
+import Card from "./Card";
+import Button from "./Button";
+import BETTING_ABI from '../abi/BettingContract.json';
 
 interface Market {
   id: number;
@@ -17,71 +10,42 @@ interface Market {
   totalYesAmount: string;
   totalNoAmount: string;
   expirationDate: Date;
-  isResolved: boolean;
-  outcome: boolean;
 }
 
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
 
-export default function Join({ onBack, isWalletConnected, groupId }: JoinProps) {
-  const router = useRouter();
+export default function Join({ onBack, isWalletConnected }: { onBack: () => void, isWalletConnected: boolean }) {
   const [markets, setMarkets] = useState<Market[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (isWalletConnected && groupId) {
-      getMarketsForGroup();
-    }
-  }, [isWalletConnected, groupId]);
+    getActiveBets();
+  }, []);
 
-  const getMarketsForGroup = async () => {
+  const getActiveBets = async () => {
     try {
-      if (typeof window.ethereum !== 'undefined' && groupId) {
-        console.log("Fetching markets for group:", groupId);
+      if (typeof window.ethereum !== 'undefined') {
         const provider = new ethers.BrowserProvider(window.ethereum);
-        const contract = new ethers.Contract(CONTRACT_ADDRESS!, MAYBEE_ABI, provider);
-  
-        const groupIdNumber = parseInt(groupId);
-        console.log("Calling getMarketsForGroup with:", groupIdNumber);
-        const marketIds = await contract.getMarketsForGroup(groupIdNumber);
-        console.log("Received market IDs:", marketIds);
-  
-        const marketsData = await Promise.all(
-          marketIds.map(async (id: number) => {
-            console.log("Fetching info for market ID:", id);
-            const marketInfo = await contract.getMarketInfo(id);
-            console.log("Received market info:", marketInfo);
-  
-            // Fonction pour convertir la date d'expiration en objet Date
-            const convertExpirationDate = (expDate: any) => {
-              if (typeof expDate === 'number') {
-                return new Date(expDate * 1000);
-              } else if (expDate && typeof expDate.toNumber === 'function') {
-                return new Date(expDate.toNumber() * 1000);
-              } else if (expDate instanceof Date) {
-                return expDate;
-              } else {
-                console.warn(`Unexpected expirationDate format for market ${id}:`, expDate);
-                return new Date(); // Retourne la date actuelle comme fallback
-              }
-            };
-  
-            return {
-              id,
-              description: marketInfo.description,
-              totalYesAmount: ethers.formatEther(marketInfo.totalYesAmount),
-              totalNoAmount: ethers.formatEther(marketInfo.totalNoAmount),
-              expirationDate: convertExpirationDate(marketInfo.expirationDate),
-              isResolved: marketInfo.isResolved,
-              outcome: marketInfo.outcome
-            };
-          })
-        );
-  
-        console.log("Processed market data:", marketsData);
+        const contract = new ethers.Contract(CONTRACT_ADDRESS!, BETTING_ABI, provider);
+
+        const [activeGameIds, titles, expirationDates, totalYesAmounts, totalNoAmounts] = 
+          await contract.getActiveBets();
+
+        const marketsData = activeGameIds.map((id: bigint, index: number) => ({
+          id: Number(id),
+          description: titles[index],
+          totalYesAmount: ethers.formatEther(totalYesAmounts[index]),
+          totalNoAmount: ethers.formatEther(totalNoAmounts[index]),
+          expirationDate: new Date(Number(expirationDates[index]) * 1000)
+        }));
+
+        console.log("Active bets:", marketsData);
         setMarkets(marketsData);
       }
     } catch (error) {
-      console.error("Error fetching market info:", error);
+      console.error("Error fetching active bets:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -89,17 +53,21 @@ export default function Join({ onBack, isWalletConnected, groupId }: JoinProps) 
     const yes = parseFloat(yesAmount);
     const no = parseFloat(noAmount);
     const total = yes + no;
-    return total === 0 ? 0 : Math.round((yes / total) * 100);
+    return total === 0 ? 50 : Math.round((yes / total) * 100);
   };
 
-  const handleBack = () => {
-    router.push("/");
+  const refreshMarkets = async () => {
+    setIsLoading(true);
+    await getActiveBets();
   };
+
+  if (isLoading) {
+    return <div className="text-center">Loading markets...</div>;
+  }
 
   return (
     <div className="w-full max-w-4xl">
-      <h2 className="text-2xl font-bold mb-4">Join a Market</h2>
-      <p>Group ID: {groupId || 'No group ID available'}</p> 
+      <h2 className="text-2xl font-bold mb-4">Active Markets</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
         {markets.map((market) => (
           <Card 
@@ -110,12 +78,17 @@ export default function Join({ onBack, isWalletConnected, groupId }: JoinProps) 
             optionB="No"
             percentageA={calculatePercentage(market.totalYesAmount, market.totalNoAmount)}
             percentageB={calculatePercentage(market.totalNoAmount, market.totalYesAmount)}
-            totalBet={parseFloat(market.totalYesAmount) + parseFloat(market.totalNoAmount)} 
-            isClickable={isWalletConnected && !market.isResolved}
+            totalBet={parseFloat(market.totalYesAmount) + parseFloat(market.totalNoAmount)}
+            expirationDate={market.expirationDate}
+            isClickable={isWalletConnected}
+            onBetPlaced={refreshMarkets}  // Add this prop
           />
         ))}
       </div>
-      <Button onClick={handleBack}>Back to Home</Button>
+      {markets.length === 0 && (
+        <p className="text-center text-gray-400">No active bets available</p>
+      )}
+      <Button onClick={onBack}>Back to Home</Button>
       {!isWalletConnected && (
         <p className="mt-4 text-yellow-400">
           Connect your wallet to interact with markets.

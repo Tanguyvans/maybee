@@ -83,28 +83,28 @@ exports.handleStart = async (ctx) => {
 
   const encodedTelegramAuthToken = encodeURIComponent(telegramAuthToken);
 
-  const isGroup = chatType === 'group' || chatType === 'supergroup';
-
   const keyboard = {
     reply_markup: {
       inline_keyboard: [
-        [
-          {
-            text: "Open Mini Web App 🚀",
-            url: `${config.MAYBEE_APP_URL}?telegramAuthToken=${encodedTelegramAuthToken}&cid=${encodedChatId}`,
-          },
-        ],
-        [
-          {
-            text: `Your chat id: ${chatId}`,
-            url: `${config.MAYBEE_APP_URL}?telegramAuthToken=${encodedTelegramAuthToken}&cid=${encodedChatId}`,
-          },
-        ],
+        // [
+        //   {
+        //     text: "Open Mini Web App 🚀",
+        //     url: `${config.MAYBEE_APP_URL}?telegramAuthToken=${encodedTelegramAuthToken}&cid=${encodedChatId}`,
+        //   },
+        // ],
+        // [
+        //   {
+        //     text: `Your chat id: ${chatId}`,
+        //     url: `${config.MAYBEE_APP_URL}?telegramAuthToken=${encodedTelegramAuthToken}&cid=${encodedChatId}`,
+        //   },
+        // ],
         [
           {
             text: "Create 🆕",
             url: `https://${config.MAYBEE_APP_URL_CREATE}?startapp=${encodedChatId}`,
           },
+        ],
+        [  
           {
             text: "Join 🤝",
             url: `https://${config.MAYBEE_APP_URL_JOIN}?startapp=${encodedChatId}`,
