@@ -57,8 +57,15 @@ export default function Join({ onBack, isWalletConnected }: { onBack: () => void
   };
 
   const refreshMarkets = async () => {
+    console.log("Refreshing markets...");
     setIsLoading(true);
-    await getActiveBets();
+    try {
+      await getActiveBets();
+    } catch (error) {
+      console.error("Error refreshing markets:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (isLoading) {

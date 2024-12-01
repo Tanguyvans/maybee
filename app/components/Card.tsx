@@ -14,6 +14,7 @@ interface CardProps {
   totalBet: number;
   expirationDate: Date;
   isClickable: boolean;
+  onBetPlaced?: () => Promise<void>;
 }
 
 export default function Card({
@@ -25,7 +26,8 @@ export default function Card({
   percentageB,
   totalBet,
   expirationDate,
-  isClickable
+  isClickable,
+  onBetPlaced
 }: CardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOption, setSelectedOption] = useState("");
@@ -75,8 +77,10 @@ export default function Card({
       alert("Bet placed successfully!");
       setIsModalOpen(false);
       
-      // You might want to refresh the market data here
-      // if you have a refresh function passed as prop
+      // Call the refresh function after successful bet
+      if (onBetPlaced) {
+        await onBetPlaced();
+      }
       
     } catch (err) {
       console.error("Error placing bet:", err);
