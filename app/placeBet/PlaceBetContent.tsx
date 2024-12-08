@@ -12,7 +12,12 @@ export default function PlaceBetContent() {
   const [groupId, setGroupId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   
-  const lp = useLaunchParams();
+  let lp = null;
+  try {
+    lp = useLaunchParams();
+  } catch (e) {
+    console.log("App opened outside of Telegram");
+  }
 
   useEffect(() => {
     if (!sdkHasLoaded) return;
@@ -29,15 +34,14 @@ export default function PlaceBetContent() {
             const decodedGroupId = atob(encodedGroupId);
             console.log("Decoded Group ID:", decodedGroupId);
             setGroupId(decodedGroupId);
-          } else {
-            console.log("No group ID available in start_param");
           }
-        } else {
-          console.log("No start_param available");
         }
       } catch (error) {
         console.error("Error in initializeComponent:", error);
-        setError("An error occurred while initializing the component.");
+        // Don't set error state for launch params issues
+        if (error instanceof Error && !error.message.includes("launch parameters")) {
+          setError("An error occurred while initializing the component.");
+        }
       } finally {
         setIsLoading(false);
       }
@@ -62,9 +66,11 @@ export default function PlaceBetContent() {
             onBack={() => window.history.back()} 
             isWalletConnected={isWalletConnected} 
           />
-          <div className="mt-4 p-2 bg-gray-800 rounded">
-            Telegram Group ID: {groupId ? groupId : "No group ID available"}
-          </div>
+          {groupId && (
+            <div className="mt-4 p-2 bg-gray-800 rounded">
+              Telegram Group ID: {groupId}
+            </div>
+          )}
         </>
       )}
       <div className="mt-6">

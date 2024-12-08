@@ -19,7 +19,12 @@ export default function CreateContent() {
   const [groupId, setGroupId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   
-  const lp = useLaunchParams();
+  let lp = null;
+  try {
+    lp = useLaunchParams();
+  } catch (e) {
+    console.log("App opened outside of Telegram");
+  }
 
   useEffect(() => {
     if (!sdkHasLoaded) return;
