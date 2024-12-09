@@ -190,7 +190,11 @@ contract BettingContract {
         emit BetPlaced(msg.sender, gameId, betAmount, isYes);
     }
 
-    function requestSettlement(uint256 gameId) external {
+    function requestSettlement(
+        uint256 gameId,
+        uint256 reward,
+        uint256 bond
+    ) external {
         Game storage game = games[gameId];
         require(!game.isResolved, "Game already resolved");
         require(block.timestamp >= game.expirationDate, "Game not expired");
@@ -198,13 +202,19 @@ contract BettingContract {
 
         game.requestTime = block.timestamp;
 
+        // Transfer reward and bond in WETH
+        IERC20(WETH).transferFrom(msg.sender, address(this), reward + bond);
+
+        // Approve the Oracle to spend the reward
+        IERC20(WETH).approve(address(oo), reward);
+
         // Request price from UMA
         oo.requestPrice(
             IDENTIFIER,
             game.requestTime,
             game.questionText,
             IERC20(WETH),
-            0
+            reward
         );
 
         // Set custom liveness

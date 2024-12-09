@@ -34,7 +34,7 @@ async function createBet() {
         // Bet details
         const title = "A";
         const description = "A";
-        const expirationDate = Math.floor(new Date('2024-12-08T20:45:00').getTime() / 1000);
+        const expirationDate = Math.floor(new Date('2024-12-09T14:13:00').getTime() / 1000);
         const verificationTime = 900; // 1 hour in seconds
         const gameDetails = "A";
 
