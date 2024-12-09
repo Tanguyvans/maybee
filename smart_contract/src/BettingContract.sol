@@ -217,6 +217,9 @@ contract BettingContract {
             reward
         );
 
+        // Set the bond for the request
+        oo.setBond(IDENTIFIER, game.requestTime, game.questionText, bond);
+
         // Set custom liveness
         oo.setCustomLiveness(
             IDENTIFIER,
