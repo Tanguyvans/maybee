@@ -194,7 +194,7 @@ contract BettingContract {
         uint256 gameId,
         uint256 reward,
         uint256 bond
-    ) external {
+    ) external onlyAdmin {
         Game storage game = games[gameId];
         require(!game.isResolved, "Game already resolved");
         require(block.timestamp >= game.expirationDate, "Game not expired");
@@ -231,7 +231,7 @@ contract BettingContract {
         emit SettlementRequested(gameId, game.requestTime);
     }
 
-    function settleGame(uint256 gameId) external {
+    function settleGame(uint256 gameId) external onlyAdmin {
         Game storage game = games[gameId];
         require(!game.isResolved, "Game already resolved");
         require(game.requestTime > 0, "Settlement not requested");
