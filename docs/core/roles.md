@@ -1,5 +1,9 @@
 # Roles & Access Control
 
+MayBee implements a comprehensive role-based access control system to ensure platform security and proper operation. Each role has specific responsibilities and permissions, creating a hierarchical structure that maintains the platform's integrity while allowing for efficient management and user participation.
+
+The system consists of four distinct roles, each with carefully defined permissions to handle different aspects of the platform. This structure ensures that only authorized participants can perform sensitive operations while maintaining an open and accessible platform for all users.
+
 ## Role Hierarchy
 
 | Role        | Description       | Key Permissions                                           |
@@ -23,3 +27,5 @@
 | Settle Game        | ✓     | ✓     |             |      |
 | Claim Winnings     | ✓     | ✓     | ✓           | ✓    |
 | Withdraw Fees      | ✓     |       |             |      |
+
+Note: Higher roles inherit all permissions of lower roles. For example, Owners can perform all actions available to Admins, Bet Creators, and Users.
