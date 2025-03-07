@@ -12,3 +12,12 @@ forge script script/DeployBetting.s.sol:DeployScript \
     --private-key $PRIVATE_KEY \
     --broadcast
 ```
+
+```
+forge script script/DeployBetting.s.sol:DeployScript \
+    --rpc-url $SEPOLIA_RPC_URL \
+    --private-key $PRIVATE_KEY \
+    --broadcast \
+    --verify \
+    --etherscan-api-key $ETHERSCAN_API_KEY
+```

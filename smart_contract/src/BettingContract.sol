@@ -18,7 +18,7 @@ contract BettingContract {
     uint256 public constant PLATFORM_FEE = 300; // 3%
     uint256 public platformBalance;
 
-    struct Game {
+    struct Market {
         string description;
         address creator;
         uint256 expirationDate;
@@ -39,31 +39,31 @@ contract BettingContract {
         bool claimed;
     }
 
-    mapping(uint256 => Game) public games;
-    uint256 public gameCount;
+    mapping(uint256 => Market) public markets;
+    uint256 public marketCount;
 
     // Events
     event AdminAdded(address indexed admin);
     event AdminRemoved(address indexed admin);
     event BetCreatorAdded(address indexed creator);
     event BetCreatorRemoved(address indexed creator);
-    event GameCreated(
-        uint256 indexed gameId,
+    event MarketCreated(
+        uint256 indexed marketId,
         string description,
         uint256 expirationDate,
         uint256 verificationTime
     );
     event BetPlaced(
         address indexed user,
-        uint256 indexed gameId,
+        uint256 indexed marketId,
         uint256 amount,
         bool isYes
     );
-    event SettlementRequested(uint256 indexed gameId, uint256 requestTime);
-    event GameResolved(uint256 indexed gameId, bool outcome);
+    event SettlementRequested(uint256 indexed marketId, uint256 requestTime);
+    event MarketResolved(uint256 indexed marketId, bool outcome);
     event WinningsClaimed(
         address indexed user,
-        uint256 indexed gameId,
+        uint256 indexed marketId,
         uint256 amount
     );
     event PlatformFeesWithdrawn(uint256 amount);
@@ -122,12 +122,12 @@ contract BettingContract {
         emit PlatformFeesWithdrawn(amount);
     }
 
-    function createGame(
+    function createMarketAdmin(
         string memory title,
         string memory description,
         uint256 expirationDate,
         uint256 _verificationTime,
-        string memory gameDetails
+        string memory marketDetails
     ) external onlyBetCreator {
         require(expirationDate > block.timestamp, "Invalid expiration date");
         require(_verificationTime >= 150, "Verification time too short");
@@ -140,32 +140,32 @@ contract BettingContract {
                 ", description: ",
                 description,
                 ", ",
-                gameDetails
+                marketDetails
             )
         );
 
-        gameCount++;
-        Game storage game = games[gameCount];
-        game.description = description;
-        game.creator = msg.sender;
-        game.expirationDate = expirationDate;
-        game.verificationTime = _verificationTime;
-        game.questionText = bytes(formattedQuestion);
+        marketCount++;
+        Market storage market = markets[marketCount];
+        market.description = description;
+        market.creator = msg.sender;
+        market.expirationDate = expirationDate;
+        market.verificationTime = _verificationTime;
+        market.questionText = bytes(formattedQuestion);
 
-        emit GameCreated(
-            gameCount,
+        emit MarketCreated(
+            marketCount,
             description,
             expirationDate,
             _verificationTime
         );
     }
 
-    function placeBet(uint256 gameId, bool isYes) external payable {
-        Game storage game = games[gameId];
-        UserBet storage userBet = game.userBets[msg.sender];
+    function placeBet(uint256 marketId, bool isYes) external payable {
+        Market storage market = markets[marketId];
+        UserBet storage userBet = market.userBets[msg.sender];
 
-        require(!game.isResolved, "Game is resolved");
-        require(block.timestamp < game.expirationDate, "Game has expired");
+        require(!market.isResolved, "Market is resolved");
+        require(block.timestamp < market.expirationDate, "Market has expired");
         require(msg.value > 0, "Bet amount must be greater than 0");
 
         // Calculate platform fee
@@ -173,34 +173,34 @@ contract BettingContract {
         uint256 betAmount = msg.value - fee;
         platformBalance += fee;
 
-        // Update game totals and user bet
+        // Update market totals and user bet
         if (isYes) {
-            game.totalYesAmount += betAmount;
+            market.totalYesAmount += betAmount;
             userBet.yesAmount += betAmount;
         } else {
-            game.totalNoAmount += betAmount;
+            market.totalNoAmount += betAmount;
             userBet.noAmount += betAmount;
         }
 
         // Add bettor to list if first bet
         if (userBet.yesAmount + userBet.noAmount == betAmount) {
-            game.bettors.push(msg.sender);
+            market.bettors.push(msg.sender);
         }
 
-        emit BetPlaced(msg.sender, gameId, betAmount, isYes);
+        emit BetPlaced(msg.sender, marketId, betAmount, isYes);
     }
 
     function requestSettlement(
-        uint256 gameId,
+        uint256 marketId,
         uint256 reward,
         uint256 bond
     ) external onlyAdmin {
-        Game storage game = games[gameId];
-        require(!game.isResolved, "Game already resolved");
-        require(block.timestamp >= game.expirationDate, "Game not expired");
-        require(game.requestTime == 0, "Settlement already requested");
+        Market storage market = markets[marketId];
+        require(!market.isResolved, "Market already resolved");
+        require(block.timestamp >= market.expirationDate, "Market not expired");
+        require(market.requestTime == 0, "Settlement already requested");
 
-        game.requestTime = block.timestamp;
+        market.requestTime = block.timestamp;
 
         // Transfer reward and bond in WETH
         IERC20(WETH).transferFrom(msg.sender, address(this), reward + bond);
@@ -211,32 +211,32 @@ contract BettingContract {
         // Request price from UMA
         oo.requestPrice(
             IDENTIFIER,
-            game.requestTime,
-            game.questionText,
+            market.requestTime,
+            market.questionText,
             IERC20(WETH),
             reward
         );
 
         // Set the bond for the request
-        oo.setBond(IDENTIFIER, game.requestTime, game.questionText, bond);
+        oo.setBond(IDENTIFIER, market.requestTime, market.questionText, bond);
 
         // Set custom liveness
         oo.setCustomLiveness(
             IDENTIFIER,
-            game.requestTime,
-            game.questionText,
-            game.verificationTime
+            market.requestTime,
+            market.questionText,
+            market.verificationTime
         );
 
-        emit SettlementRequested(gameId, game.requestTime);
+        emit SettlementRequested(marketId, market.requestTime);
     }
 
-    function settleGame(uint256 gameId) external onlyAdmin {
-        Game storage game = games[gameId];
-        require(!game.isResolved, "Game already resolved");
-        require(game.requestTime > 0, "Settlement not requested");
+    function settleMarket(uint256 marketId) external onlyAdmin {
+        Market storage market = markets[marketId];
+        require(!market.isResolved, "Market already resolved");
+        require(market.requestTime > 0, "Settlement not requested");
         require(
-            block.timestamp >= game.requestTime + game.verificationTime,
+            block.timestamp >= market.requestTime + market.verificationTime,
             "Verification time not passed"
         );
 
@@ -245,22 +245,22 @@ contract BettingContract {
             .getRequest(
                 address(this),
                 IDENTIFIER,
-                game.requestTime,
-                game.questionText
+                market.requestTime,
+                market.questionText
             )
             .resolvedPrice;
 
-        game.outcome = result == 1;
-        game.isResolved = true;
+        market.outcome = result == 1;
+        market.isResolved = true;
 
-        emit GameResolved(gameId, game.outcome);
+        emit MarketResolved(marketId, market.outcome);
     }
 
-    function claimWinnings(uint256 gameId) external {
-        Game storage game = games[gameId];
-        require(game.isResolved, "Game not resolved");
+    function claimWinnings(uint256 marketId) external {
+        Market storage market = markets[marketId];
+        require(market.isResolved, "Market not resolved");
 
-        UserBet storage userBet = game.userBets[msg.sender];
+        UserBet storage userBet = market.userBets[msg.sender];
         require(!userBet.claimed, "Winnings already claimed");
         require(
             userBet.yesAmount > 0 || userBet.noAmount > 0,
@@ -270,14 +270,14 @@ contract BettingContract {
         uint256 winnings = 0;
 
         // If YES wins
-        if (game.outcome) {
+        if (market.outcome) {
             if (userBet.yesAmount > 0) {
-                if (game.totalNoAmount > 0) {
+                if (market.totalNoAmount > 0) {
                     // Normal case: distribute losing pool
                     winnings =
                         userBet.yesAmount +
-                        (userBet.yesAmount * game.totalNoAmount) /
-                        game.totalYesAmount;
+                        (userBet.yesAmount * market.totalNoAmount) /
+                        market.totalYesAmount;
                 } else {
                     // Edge case: everyone bet YES
                     winnings = userBet.yesAmount; // Just return original bet
@@ -287,12 +287,12 @@ contract BettingContract {
         // If NO wins
         else {
             if (userBet.noAmount > 0) {
-                if (game.totalYesAmount > 0) {
+                if (market.totalYesAmount > 0) {
                     // Normal case: distribute losing pool
                     winnings =
                         userBet.noAmount +
-                        (userBet.noAmount * game.totalYesAmount) /
-                        game.totalNoAmount;
+                        (userBet.noAmount * market.totalYesAmount) /
+                        market.totalNoAmount;
                 } else {
                     // Edge case: everyone bet NO
                     winnings = userBet.noAmount; // Just return original bet
@@ -304,12 +304,12 @@ contract BettingContract {
         userBet.claimed = true;
 
         payable(msg.sender).transfer(winnings);
-        emit WinningsClaimed(msg.sender, gameId, winnings);
+        emit WinningsClaimed(msg.sender, marketId, winnings);
     }
 
     // View functions
-    function getGameDetails(
-        uint256 gameId
+    function getMarketDetails(
+        uint256 marketId
     )
         external
         view
@@ -325,29 +325,29 @@ contract BettingContract {
             bool outcome
         )
     {
-        Game storage game = games[gameId];
+        Market storage market = markets[marketId];
         return (
-            game.description,
-            game.creator,
-            game.expirationDate,
-            game.verificationTime,
-            game.isResolved,
-            game.totalYesAmount,
-            game.totalNoAmount,
-            game.requestTime,
-            game.outcome
+            market.description,
+            market.creator,
+            market.expirationDate,
+            market.verificationTime,
+            market.isResolved,
+            market.totalYesAmount,
+            market.totalNoAmount,
+            market.requestTime,
+            market.outcome
         );
     }
 
     function getUserBet(
         address user,
-        uint256 gameId
+        uint256 marketId
     )
         external
         view
         returns (uint256 yesAmount, uint256 noAmount, bool claimed)
     {
-        UserBet storage userBet = games[gameId].userBets[user];
+        UserBet storage userBet = markets[marketId].userBets[user];
         return (userBet.yesAmount, userBet.noAmount, userBet.claimed);
     }
 }
