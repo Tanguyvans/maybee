@@ -6,12 +6,12 @@ The system consists of four distinct roles, each with carefully defined permissi
 
 ## Role Hierarchy
 
-| Role        | Description       | Key Permissions                                           |
-| ----------- | ----------------- | --------------------------------------------------------- |
-| Owner       | Contract deployer | - Add/Remove Admins<br>- Withdraw platform fees           |
-| Admin       | Platform managers | - Add/Remove Bet Creators<br>- Request/Execute settlement |
-| Bet Creator | Game creators     | - Create new betting games                                |
-| User        | Players           | - Place bets<br>- Claim winnings                          |
+| Role        | Description       | Key Permissions                                            |
+| ----------- | ----------------- | ---------------------------------------------------------- |
+| Owner       | Contract deployer | - Add/Remove Admins<br/>- Withdraw platform fees           |
+| Admin       | Platform managers | - Add/Remove Bet Creators<br/>- Request/Execute settlement |
+| Bet Creator | Game creators     | - Create new betting games                                 |
+| User        | Players           | - Place bets<br/>- Claim winnings                          |
 
 ## Access Control Matrix
 
@@ -21,10 +21,10 @@ The system consists of four distinct roles, each with carefully defined permissi
 | Remove Admin       | ✓     |       |             |      |
 | Add Bet Creator    | ✓     | ✓     |             |      |
 | Remove Bet Creator | ✓     | ✓     |             |      |
-| Create Game        | ✓     | ✓     | ✓           |      |
+| Create Market      | ✓     | ✓     | ✓           |      |
 | Place Bet          | ✓     | ✓     | ✓           | ✓    |
 | Request Settlement | ✓     | ✓     |             |      |
-| Settle Game        | ✓     | ✓     |             |      |
+| Settle Market      | ✓     | ✓     |             |      |
 | Claim Winnings     | ✓     | ✓     | ✓           | ✓    |
 | Withdraw Fees      | ✓     |       |             |      |
 

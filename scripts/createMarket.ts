@@ -34,25 +34,28 @@ async function createBet() {
         // Bet details
         const title = "A";
         const description = "A";
-        const expirationDate = Math.floor(new Date('2025-03-07T20:48:00').getTime() / 1000);
+        const expirationDate = Math.floor(new Date('2025-03-07T23:30:00').getTime() / 1000);
         const verificationTime = 900; // 1 hour in seconds
         const gameDetails = "A";
+        const imageUrl = "https://i.ibb.co/0r00000/image.png";
 
         console.log('Creating bet with details:', {
             title,
             description,
             expirationDate: new Date(expirationDate * 1000).toLocaleString(),
             verificationTime: `${verificationTime / 3600} hours`,
-            gameDetails
+            gameDetails,
+            imageUrl    
         });
 
         // Create the bet
-        const tx = await contract.createGame(
+        const tx = await contract.createMarketAdmin(
             title,
             description,
             expirationDate,
             verificationTime,
-            gameDetails
+            gameDetails,
+            imageUrl
         );
 
         console.log('Transaction sent:', tx.hash);

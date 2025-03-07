@@ -26,22 +26,22 @@ async function getAllBets() {
             provider
         );
 
-        const gameCount = await contract.gameCount();
+        const marketCount = await contract.marketCount();
         const currentTime = Math.floor(Date.now() / 1000);
         const bets: BetHistory[] = [];
 
         console.log('Fetching all bets history...\n');
 
-        for (let i = 1; i <= gameCount; i++) {
-            const game = await contract.games(i);
-            const yesAmount = ethers.formatEther(game.totalYesAmount);
-            const noAmount = ethers.formatEther(game.totalNoAmount);
+        for (let i = 1; i <= marketCount; i++) {
+            const market = await contract.markets(i);
+            const yesAmount = ethers.formatEther(market.totalYesAmount);
+            const noAmount = ethers.formatEther(market.totalNoAmount);
             const totalPool = (parseFloat(yesAmount) + parseFloat(noAmount)).toString();
 
             let status: BetHistory['status'];
-            if (game.isResolved) {
+            if (market.isResolved) {
                 status = 'RESOLVED';
-            } else if (Number(game.expirationDate) <= currentTime) {
+            } else if (Number(market.expirationDate) <= currentTime) {
                 status = 'EXPIRED';
             } else {
                 status = 'ACTIVE';
@@ -49,14 +49,14 @@ async function getAllBets() {
 
             bets.push({
                 id: i,
-                description: game.description,
-                creator: game.creator,
-                expirationDate: new Date(Number(game.expirationDate) * 1000),
-                isResolved: game.isResolved,
+                description: market.description,
+                creator: market.creator,
+                expirationDate: new Date(Number(market.expirationDate) * 1000),
+                isResolved: market.isResolved,
                 yesAmount,
                 noAmount,
                 totalPool,
-                outcome: game.isResolved ? game.outcome : undefined,
+                outcome: market.isResolved ? market.outcome : undefined,
                 status
             });
         }

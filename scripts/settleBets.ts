@@ -22,34 +22,34 @@ async function settleBets() {
 
         console.log('Checking for bets ready to settle...');
 
-        // Get the total number of games and use hardcoded LIVENESS for now
-        const gameCount = await contract.gameCount();
+        // Get the total number of markets and use hardcoded LIVENESS for now
+        const marketCount = await contract.marketCount();
         const LIVENESS = 1800; // 30 minutes in seconds
         const currentTime = Math.floor(Date.now() / 1000);
-        let settleableGamesFound = false;
+        let settleableMarketsFound = false;
 
         console.log(`Liveness period: ${LIVENESS} seconds`);
 
-        // Loop through all games
-        for (let i = 1; i <= gameCount; i++) {
-            const game = await contract.games(i);
+        // Loop through all markets
+        for (let i = 1; i <= marketCount; i++) {
+            const market = await contract.markets(i);
             
-            // Check if game is ready to be settled
-            if (!game.isResolved && 
-                game.requestTime > 0 && 
-                currentTime >= Number(game.requestTime) + LIVENESS) {
+            // Check if market is ready to be settled
+            if (!market.isResolved && 
+                market.requestTime > 0 && 
+                currentTime >= Number(market.requestTime) + LIVENESS) {
                 
-                settleableGamesFound = true;
+                settleableMarketsFound = true;
                 console.log(`\nFound settleable bet #${i}:`);
-                console.log(`Description: ${game.description}`);
-                console.log(`Expiration: ${new Date(Number(game.expirationDate) * 1000).toLocaleString()}`);
-                console.log(`Settlement requested: ${new Date(Number(game.requestTime) * 1000).toLocaleString()}`);
-                console.log(`Liveness period ends: ${new Date((Number(game.requestTime) + LIVENESS) * 1000).toLocaleString()}`);
-                console.log(`Total Pool: ${ethers.formatEther(BigInt(game.totalYesAmount) + BigInt(game.totalNoAmount))} ETH`);
+                console.log(`Description: ${market.description}`);
+                console.log(`Expiration: ${new Date(Number(market.expirationDate) * 1000).toLocaleString()}`);
+                console.log(`Settlement requested: ${new Date(Number(market.requestTime) * 1000).toLocaleString()}`);
+                console.log(`Liveness period ends: ${new Date((Number(market.requestTime) + LIVENESS) * 1000).toLocaleString()}`);
+                console.log(`Total Pool: ${ethers.formatEther(BigInt(market.totalYesAmount) + BigInt(market.totalNoAmount))} ETH`);
                 
                 try {
                     console.log('Settling bet...');
-                    const tx = await contract.settleGame(i, { 
+                    const tx = await contract.settleMarket(i, { 
                         gasLimit: 500000 
                     });
                     console.log('Transaction sent:', tx.hash);
@@ -59,12 +59,12 @@ async function settleBets() {
 
                     // Get the settlement result from the event
                     const event = receipt.logs.find(
-                        (log: any) => log.fragment?.name === 'GameResolved'
+                        (log: any) => log.fragment?.name === 'MarketResolved'
                     );
 
                     if (event) {
-                        const [gameId, outcome] = event.args;
-                        console.log(`Bet #${gameId} settled with outcome: ${outcome ? 'YES' : 'NO'}`);
+                        const [marketId, outcome] = event.args;
+                        console.log(`Bet #${marketId} settled with outcome: ${outcome ? 'YES' : 'NO'}`);
                     }
 
                     // Add a small delay between settlements
@@ -76,17 +76,17 @@ async function settleBets() {
                     }
                     
                     // Log current state for debugging
-                    console.log('\nCurrent game state:');
-                    console.log('Is Resolved:', game.isResolved);
-                    console.log('Request Time:', new Date(Number(game.requestTime) * 1000).toLocaleString());
+                    console.log('\nCurrent market state:');
+                    console.log('Is Resolved:', market.isResolved);
+                    console.log('Request Time:', new Date(Number(market.requestTime) * 1000).toLocaleString());
                     console.log('Current Time:', new Date(currentTime * 1000).toLocaleString());
-                    console.log('Liveness Period Ends:', new Date((Number(game.requestTime) + LIVENESS) * 1000).toLocaleString());
-                    console.log('Ready to Settle:', currentTime >= Number(game.requestTime) + LIVENESS);
+                    console.log('Liveness Period Ends:', new Date((Number(market.requestTime) + LIVENESS) * 1000).toLocaleString());
+                    console.log('Ready to Settle:', currentTime >= Number(market.requestTime) + LIVENESS);
                 }
             }
         }
 
-        if (!settleableGamesFound) {
+        if (!settleableMarketsFound) {
             console.log('\nNo bets are ready to be settled.');
             console.log(`Note: Bets must have completed the Oracle liveness period (${LIVENESS} seconds) after settlement request.`);
         }

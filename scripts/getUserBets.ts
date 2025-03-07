@@ -5,7 +5,7 @@ const BETTING_ABI = require('../app/abi/BettingContract.json');
 dotenv.config();
 
 interface UserBet {
-    gameId: number;
+    marketId: number;
     description: string;
     betAmount: string;
     position: 'YES' | 'NO';
@@ -26,7 +26,7 @@ interface Log {
 
 interface ParsedLog {
     args: {
-        gameId: bigint;
+        marketId: bigint;
         amount: bigint;
         isYes: boolean;
         timestamp: bigint;
@@ -100,17 +100,17 @@ async function getUserBets(userAddress: string) {
 
         // Process each bet
         for (const event of events) {
-            const { gameId, amount, isYes, timestamp } = event.args;
-            const game = await contract.games(gameId);
+            const { marketId, amount, isYes, timestamp } = event.args;
+            const market = await contract.markets(marketId);
             const betAmount = ethers.formatEther(amount);
 
-            // Calculate profit if game is resolved
+            // Calculate profit if market is resolved
             let profit: string | undefined;
-            if (game.isResolved) {
-                const won = game.outcome === isYes;
+            if (market.isResolved) {
+                const won = market.outcome === isYes;
                 if (won) {
-                    const totalPool = BigInt(game.totalYesAmount) + BigInt(game.totalNoAmount);
-                    const winningPool = isYes ? BigInt(game.totalYesAmount) : BigInt(game.totalNoAmount);
+                    const totalPool = BigInt(market.totalYesAmount) + BigInt(market.totalNoAmount);
+                    const winningPool = isYes ? BigInt(market.totalYesAmount) : BigInt(market.totalNoAmount);
                     const profitAmount = (BigInt(amount) * totalPool) / winningPool - BigInt(amount);
                     profit = ethers.formatEther(profitAmount);
                 } else {
@@ -120,24 +120,24 @@ async function getUserBets(userAddress: string) {
 
             // Determine bet status
             let status: UserBet['status'];
-            if (game.isResolved) {
+            if (market.isResolved) {
                 status = 'RESOLVED';
-            } else if (Number(game.expirationDate) <= currentTime) {
+            } else if (Number(market.expirationDate) <= currentTime) {
                 status = 'EXPIRED';
             } else {
                 status = 'ACTIVE';
             }
 
             userBets.push({
-                gameId: Number(gameId),
-                description: game.description,
+                marketId: Number(marketId),
+                description: market.description,
                 betAmount,
                 position: isYes ? 'YES' : 'NO',
                 status,
-                outcome: game.isResolved ? game.outcome : undefined,
+                outcome: market.isResolved ? market.outcome : undefined,
                 profit,
                 timestamp: new Date(Number(timestamp) * 1000),
-                expirationDate: new Date(Number(game.expirationDate) * 1000)
+                expirationDate: new Date(Number(market.expirationDate) * 1000)
             });
 
             totalBetAmount += parseFloat(betAmount);
@@ -182,7 +182,7 @@ async function getUserBets(userAddress: string) {
 }
 
 function printBetDetails(bet: UserBet) {
-    console.log(`\nBet #${bet.gameId}`);
+    console.log(`\nBet #${bet.marketId}`);
     console.log(`Description: ${bet.description}`);
     console.log(`Position: ${bet.position}`);
     console.log(`Amount: ${bet.betAmount} ETH`);

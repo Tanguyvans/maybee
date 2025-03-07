@@ -13,7 +13,7 @@ interface ContractError {
     message?: string;
 }
 
-interface Game {
+interface Market {
     description: string;
     expirationDate: bigint;
     isResolved: boolean;
@@ -41,25 +41,25 @@ async function requestSettlement(): Promise<void> {
 
         console.log('Checking for expired bets that need settlement request...');
 
-        const gameCount = await contract.gameCount();
+        const marketCount = await contract.marketCount();
         const currentTime = Math.floor(Date.now() / 1000);
         let expiredBetsFound = false;
 
-        for (let i = 1; i <= Number(gameCount); i++) {
-            const game = await contract.games(i) as Game;
+        for (let i = 1; i <= Number(marketCount); i++) {
+            const market = await contract.markets(i) as Market;
             
-            if (!game.isResolved && 
-                Number(game.expirationDate) <= currentTime && 
-                Number(game.requestTime) === 0) {
+            if (!market.isResolved && 
+                Number(market.expirationDate) <= currentTime && 
+                Number(market.requestTime) === 0) {
                 
                 expiredBetsFound = true;
                 const totalPool = ethers.formatEther(
-                    game.totalYesAmount + game.totalNoAmount
+                    market.totalYesAmount + market.totalNoAmount
                 );
 
                 console.log(`\nFound expired bet #${i}:`);
-                console.log(`Description: ${game.description}`);
-                console.log(`Expiration: ${new Date(Number(game.expirationDate) * 1000).toLocaleString()}`);
+                console.log(`Description: ${market.description}`);
+                console.log(`Expiration: ${new Date(Number(market.expirationDate) * 1000).toLocaleString()}`);
                 console.log(`Total Pool: ${totalPool} ETH`);
                 
                 try {
@@ -82,7 +82,7 @@ async function requestSettlement(): Promise<void> {
                     // 3. Request settlement
                     console.log('Requesting settlement...');
                     const tx = await contract.requestSettlement(
-                        i,              // gameId
+                        i,              // marketId
                         reward,         // reward amount
                         bond            // bond amount
                     );
@@ -94,7 +94,7 @@ async function requestSettlement(): Promise<void> {
                     }
                     console.log('Settlement requested in block:', receipt.blockNumber);
                     
-                    const verificationTime = Number(game.verificationTime);
+                    const verificationTime = Number(market.verificationTime);
                     console.log(`⏳ Waiting period (${verificationTime} seconds) has started`);
                     console.log(`Settlement can be executed after: ${new Date(currentTime * 1000 + verificationTime * 1000).toLocaleString()}`);
 

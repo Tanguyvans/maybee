@@ -28,43 +28,43 @@ async function getActiveBets() {
 
         console.log('Fetching active bets...');
 
-        // Get the total number of games
-        const gameCount = await contract.gameCount();
-        console.log(`Total games created: ${gameCount}`);
+        // Get the total number of markets
+        const marketCount = await contract.marketCount();
+        console.log(`Total markets created: ${marketCount}`);
 
-        // Fetch and display active games
+        // Fetch and display active markets
         console.log('\nActive Bets:');
         console.log('------------');
 
-        let activeGamesFound = false;
+        let activeMarketsFound = false;
 
-        // Loop through all games
-        for (let i = 1; i <= gameCount; i++) {
-            const game = await contract.games(i);
+        // Loop through all markets
+        for (let i = 1; i <= marketCount; i++) {
+            const market = await contract.markets(i);
             const currentTime = Math.floor(Date.now() / 1000);
             
-            // Check if game is active (not expired and not resolved)
-            if (!game.isResolved && Number(game.expirationDate) > currentTime) {
-                activeGamesFound = true;
-                const expirationDate = new Date(Number(game.expirationDate) * 1000);
-                const yesAmount = ethers.formatEther(game.totalYesAmount);
-                const noAmount = ethers.formatEther(game.totalNoAmount);
+            // Check if market is active (not expired and not resolved)
+            if (!market.isResolved && Number(market.expirationDate) > currentTime) {
+                activeMarketsFound = true;
+                const expirationDate = new Date(Number(market.expirationDate) * 1000);
+                const yesAmount = ethers.formatEther(market.totalYesAmount);
+                const noAmount = ethers.formatEther(market.totalNoAmount);
                 const totalAmount = parseFloat(yesAmount) + parseFloat(noAmount);
 
                 console.log(`\nBet #${i}`);
-                console.log(`Description: ${game.description}`);
+                console.log(`Description: ${market.description}`);
                 console.log(`Expiration: ${expirationDate.toLocaleString()}`);
                 console.log(`Total Yes Amount: ${yesAmount} ETH`);
                 console.log(`Total No Amount: ${noAmount} ETH`);
                 console.log(`Total Pool: ${totalAmount} ETH`);
                 console.log(`Time until expiration: ${getTimeUntil(expirationDate)}`);
-                console.log(`Creator: ${game.creator}`);
-                console.log(`Is Resolved: ${game.isResolved}`);
+                console.log(`Creator: ${market.creator}`);
+                console.log(`Is Resolved: ${market.isResolved}`);
             }
         }
 
-        if (!activeGamesFound) {
-            console.log('No active bets found.');
+        if (!activeMarketsFound) {
+            console.log('No active markets found.');
         }
 
     } catch (error: unknown) {

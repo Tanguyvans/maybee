@@ -2,7 +2,7 @@
 
 ## System Overview
 
-![Sequence Diagram](../images/diagrams/sequence.png)
+![Sequence Diagram](../../images/diagrams/sequence.png)
 
 ## How It Works
 

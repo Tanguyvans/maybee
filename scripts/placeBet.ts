@@ -13,7 +13,7 @@ interface ContractError {
 }
 
 interface BetDetails {
-    gameId: number;
+    marketId: number;
     isYes: boolean;
     amount: string;
 }
@@ -35,15 +35,15 @@ async function placeBet(betDetails: BetDetails) {
         const contract = new ethers.Contract(CONTRACT_ADDRESS, BETTING_ABI, wallet);
 
         // Get bet details
-        const game = await contract.games(betDetails.gameId);
+        const market = await contract.markets(betDetails.marketId);
         const currentTime = Math.floor(Date.now() / 1000);
 
         // Validate bet
-        if (game.isResolved) {
-            throw new Error('This bet has already been resolved');
+        if (market.isResolved) {
+            throw new Error('This market has already been resolved');
         }
-        if (Number(game.expirationDate) <= currentTime) {
-            throw new Error('This bet has expired');
+        if (Number(market.expirationDate) <= currentTime) {
+            throw new Error('This market has expired');
         }
 
         const amountInWei = ethers.parseEther(betDetails.amount);
@@ -52,15 +52,15 @@ async function placeBet(betDetails: BetDetails) {
         // Display bet information
         console.log('\nBet Details:');
         console.log('============');
-        console.log(`Game ID: ${betDetails.gameId}`);
-        console.log(`Description: ${game.description}`);
+        console.log(`Market ID: ${betDetails.marketId}`);
+        console.log(`Description: ${market.description}`);
         console.log(`Betting: ${betType}`);
         console.log(`Amount: ${betDetails.amount} ETH`);
-        console.log(`Expiration: ${new Date(Number(game.expirationDate) * 1000).toLocaleString()}`);
+        console.log(`Expiration: ${new Date(Number(market.expirationDate) * 1000).toLocaleString()}`);
 
         // Get current pool amounts
-        const yesAmount = ethers.formatEther(game.totalYesAmount);
-        const noAmount = ethers.formatEther(game.totalNoAmount);
+        const yesAmount = ethers.formatEther(market.totalYesAmount);
+        const noAmount = ethers.formatEther(market.totalNoAmount);
         console.log(`\nCurrent Pool:`);
         console.log(`YES Pool: ${yesAmount} ETH`);
         console.log(`NO Pool: ${noAmount} ETH`);
@@ -69,7 +69,7 @@ async function placeBet(betDetails: BetDetails) {
         // Place the bet
         console.log('\nPlacing bet...');
         const tx = await contract.placeBet(
-            betDetails.gameId,
+            betDetails.marketId,
             betDetails.isYes,
             { 
                 value: amountInWei,
@@ -83,9 +83,9 @@ async function placeBet(betDetails: BetDetails) {
         console.log('Transaction confirmed in block:', receipt.blockNumber);
 
         // Get updated pool amounts
-        const updatedGame = await contract.games(betDetails.gameId);
-        const updatedYesAmount = ethers.formatEther(updatedGame.totalYesAmount);
-        const updatedNoAmount = ethers.formatEther(updatedGame.totalNoAmount);
+        const updatedMarket = await contract.markets(betDetails.marketId);
+        const updatedYesAmount = ethers.formatEther(updatedMarket.totalYesAmount);
+        const updatedNoAmount = ethers.formatEther(updatedMarket.totalNoAmount);
 
         console.log('\nUpdated Pool:');
         console.log(`YES Pool: ${updatedYesAmount} ETH`);
@@ -108,13 +108,13 @@ if (require.main === module) {
     const args = process.argv.slice(2);
     
     if (args.length !== 3) {
-        console.log('Usage: npx ts-node scripts/placeBet.ts <gameId> <isYes> <amount>');
+        console.log('Usage: npx ts-node scripts/placeBet.ts <marketId> <isYes> <amount>');
         console.log('Example: npx ts-node scripts/placeBet.ts 1 true 0.1');
         process.exit(1);
     }
 
     const betDetails: BetDetails = {
-        gameId: parseInt(args[0]),
+        marketId: parseInt(args[0]),
         isYes: args[1].toLowerCase() === 'true',
         amount: args[2]
     };

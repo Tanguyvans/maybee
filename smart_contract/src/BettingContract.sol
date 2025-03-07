@@ -29,6 +29,7 @@ contract BettingContract {
         uint256 requestTime;
         bool outcome;
         bytes questionText;
+        string imageUrl;
         mapping(address => UserBet) userBets;
         address[] bettors;
     }
@@ -127,7 +128,8 @@ contract BettingContract {
         string memory description,
         uint256 expirationDate,
         uint256 _verificationTime,
-        string memory marketDetails
+        string memory marketDetails,
+        string memory imageUrl
     ) external onlyBetCreator {
         require(expirationDate > block.timestamp, "Invalid expiration date");
         require(_verificationTime >= 150, "Verification time too short");
@@ -140,7 +142,9 @@ contract BettingContract {
                 ", description: ",
                 description,
                 ", ",
-                marketDetails
+                marketDetails,
+                ", imageUrl: ",
+                imageUrl
             )
         );
 
@@ -151,7 +155,7 @@ contract BettingContract {
         market.expirationDate = expirationDate;
         market.verificationTime = _verificationTime;
         market.questionText = bytes(formattedQuestion);
-
+        market.imageUrl = imageUrl;
         emit MarketCreated(
             marketCount,
             description,
@@ -161,6 +165,10 @@ contract BettingContract {
     }
 
     function placeBet(uint256 marketId, bool isYes) external payable {
+        require(
+            marketId > 0 && marketId <= marketCount,
+            "Market does not exist"
+        );
         Market storage market = markets[marketId];
         UserBet storage userBet = market.userBets[msg.sender];
 
@@ -195,6 +203,10 @@ contract BettingContract {
         uint256 reward,
         uint256 bond
     ) external onlyAdmin {
+        require(
+            marketId > 0 && marketId <= marketCount,
+            "Market does not exist"
+        );
         Market storage market = markets[marketId];
         require(!market.isResolved, "Market already resolved");
         require(block.timestamp >= market.expirationDate, "Market not expired");
@@ -232,6 +244,10 @@ contract BettingContract {
     }
 
     function settleMarket(uint256 marketId) external onlyAdmin {
+        require(
+            marketId > 0 && marketId <= marketCount,
+            "Market does not exist"
+        );
         Market storage market = markets[marketId];
         require(!market.isResolved, "Market already resolved");
         require(market.requestTime > 0, "Settlement not requested");
@@ -257,6 +273,10 @@ contract BettingContract {
     }
 
     function claimWinnings(uint256 marketId) external {
+        require(
+            marketId > 0 && marketId <= marketCount,
+            "Market does not exist"
+        );
         Market storage market = markets[marketId];
         require(market.isResolved, "Market not resolved");
 
@@ -349,5 +369,15 @@ contract BettingContract {
     {
         UserBet storage userBet = markets[marketId].userBets[user];
         return (userBet.yesAmount, userBet.noAmount, userBet.claimed);
+    }
+
+    function getAllMarkets() external view returns (uint256[] memory) {
+        uint256[] memory allMarkets = new uint256[](marketCount);
+
+        for (uint256 i = 1; i <= marketCount; i++) {
+            allMarkets[i - 1] = i;
+        }
+
+        return allMarkets;
     }
 }

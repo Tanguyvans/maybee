@@ -2,7 +2,7 @@
 sidebar_position: 1
 ---
 
-# Introduction
+# Introductionsm
 
 ## Overview
 
@@ -54,11 +54,6 @@ MayBee prioritizes security through multiple layers of protection:
 ## Documentation
 
 For detailed information about specific aspects of the platform:
-
-- [Architecture & Flow](core/architecture.md) - Understand how MayBee works
-- [Roles & Access](core/roles.md) - Learn about permission levels
-- [API Reference](technical/api.md) - Technical documentation
-- [Telegram Bot](https://t.me/maybee01_bot) - Start betting now
 
 ## Platform Fees
 
