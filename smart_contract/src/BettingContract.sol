@@ -18,6 +18,17 @@ contract BettingContract {
     uint256 public constant PLATFORM_FEE = 300; // 3%
     uint256 public platformBalance;
 
+    enum MarketCategory {
+        CULTURE,
+        CRYPTO,
+        SPORTS,
+        POLITICS,
+        MEMECOINS,
+        GAMING,
+        ECONOMY,
+        AI
+    }
+
     struct Market {
         string description;
         address creator;
@@ -30,6 +41,7 @@ contract BettingContract {
         bool outcome;
         bytes questionText;
         string imageUrl;
+        MarketCategory category;
         mapping(address => UserBet) userBets;
         address[] bettors;
     }
@@ -42,6 +54,23 @@ contract BettingContract {
 
     mapping(uint256 => Market) public markets;
     uint256 public marketCount;
+
+    uint256[] public marketIds;
+
+    struct MarketView {
+        uint256 marketId;
+        string description;
+        address creator;
+        uint256 expirationDate;
+        uint256 verificationTime;
+        bool isResolved;
+        uint256 totalYesAmount;
+        uint256 totalNoAmount;
+        uint256 requestTime;
+        bool outcome;
+        MarketCategory category;
+        string imageUrl;
+    }
 
     // Events
     event AdminAdded(address indexed admin);
@@ -129,7 +158,8 @@ contract BettingContract {
         uint256 expirationDate,
         uint256 _verificationTime,
         string memory marketDetails,
-        string memory imageUrl
+        string memory imageUrl,
+        MarketCategory category
     ) external onlyBetCreator {
         require(expirationDate > block.timestamp, "Invalid expiration date");
         require(_verificationTime >= 150, "Verification time too short");
@@ -142,9 +172,7 @@ contract BettingContract {
                 ", description: ",
                 description,
                 ", ",
-                marketDetails,
-                ", imageUrl: ",
-                imageUrl
+                marketDetails
             )
         );
 
@@ -156,6 +184,10 @@ contract BettingContract {
         market.verificationTime = _verificationTime;
         market.questionText = bytes(formattedQuestion);
         market.imageUrl = imageUrl;
+        market.category = category;
+
+        marketIds.push(marketCount);
+
         emit MarketCreated(
             marketCount,
             description,
@@ -342,7 +374,9 @@ contract BettingContract {
             uint256 totalYesAmount,
             uint256 totalNoAmount,
             uint256 requestTime,
-            bool outcome
+            bool outcome,
+            MarketCategory category,
+            string memory imageUrl
         )
     {
         Market storage market = markets[marketId];
@@ -355,7 +389,9 @@ contract BettingContract {
             market.totalYesAmount,
             market.totalNoAmount,
             market.requestTime,
-            market.outcome
+            market.outcome,
+            market.category,
+            market.imageUrl
         );
     }
 
@@ -371,11 +407,32 @@ contract BettingContract {
         return (userBet.yesAmount, userBet.noAmount, userBet.claimed);
     }
 
-    function getAllMarkets() external view returns (uint256[] memory) {
-        uint256[] memory allMarkets = new uint256[](marketCount);
+    function getAllMarketIds() external view returns (uint256[] memory) {
+        return marketIds;
+    }
 
-        for (uint256 i = 1; i <= marketCount; i++) {
-            allMarkets[i - 1] = i;
+    function getAllMarkets() external view returns (MarketView[] memory) {
+        uint256 totalMarkets = marketIds.length;
+        MarketView[] memory allMarkets = new MarketView[](totalMarkets);
+
+        for (uint256 i = 0; i < marketIds.length; i++) {
+            uint256 id = marketIds[i];
+            Market storage market = markets[id];
+
+            allMarkets[i] = MarketView({
+                marketId: id,
+                description: market.description,
+                creator: market.creator,
+                expirationDate: market.expirationDate,
+                verificationTime: market.verificationTime,
+                isResolved: market.isResolved,
+                totalYesAmount: market.totalYesAmount,
+                totalNoAmount: market.totalNoAmount,
+                requestTime: market.requestTime,
+                outcome: market.outcome,
+                category: market.category,
+                imageUrl: market.imageUrl
+            });
         }
 
         return allMarkets;
