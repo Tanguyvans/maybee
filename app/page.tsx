@@ -123,7 +123,7 @@ export default function Main() {
               yesPercentage,
               noPercentage,
               liquidity: `${ethers.formatEther(
-                market.totalYesAmount.add(market.totalNoAmount)
+                BigInt(market.totalYesAmount) + BigInt(market.totalNoAmount)
               )} ETH`,
               category: categoryString,
               image: market.imageUrl || `/images/pepe-coin.png`, // Fallback image if none provided
@@ -484,7 +484,7 @@ export default function Main() {
                         className="text-sm flex items-center font-game text-gray-400"
                         whileHover={{ scale: 1.05 }}
                       >
-                        🐸 {market.liquidity}
+                        {market.liquidity}
                       </motion.span>
                       <Link href={`/market/${market.id}`}>
                         <motion.div
