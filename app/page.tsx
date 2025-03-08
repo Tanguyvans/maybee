@@ -8,7 +8,7 @@ import {
 import Image from "next/image";
 import Button from "./components/Button";
 import Link from "next/link";
-import Spinner from "./Spinner";
+
 import {
   motion,
   useScroll,
@@ -37,6 +37,7 @@ interface FormattedMarket {
   liquidity: string;
   category: string;
   image: string;
+  expirationDate: number;
 }
 
 export default function Main() {
@@ -116,12 +117,20 @@ export default function Main() {
               "Gaming",
             ];
             const categoryString = categoryMap[market.category] || "Other";
+            const expirationDate = new Date(
+              Number(market.expirationDate) * 1000
+            );
 
             return {
               id: market.marketId,
               title: market.description,
               yesPercentage,
               noPercentage,
+              expirationDate: expirationDate.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              }),
               liquidity: `${ethers.formatEther(
                 BigInt(market.totalYesAmount) + BigInt(market.totalNoAmount)
               )} ETH`,
@@ -491,6 +500,7 @@ export default function Main() {
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                         >
+                          {market.expirationDate}
                           <Button className="text-sm px-6 py-3 font-game bg-zinc-800 border border-zinc-700">
                             Trade Now
                           </Button>
