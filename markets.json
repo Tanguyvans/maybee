@@ -1,0 +1,34 @@
+[
+  {
+    "marketId": "1",
+    "description": "This market resolves to YES if the price of Bitcoin (BTC) reaches or exceeds $100,000 USD on any major exchange before December 31, 2024 23:59:59 UTC. Otherwise, it resolves to NO.",
+    "creator": "0x504b635B7E22F8DF7d037cf31639811AE583E9f0",
+    "expirationDate": 1742070600,
+    "expirationDateFormatted": "15/03/2025 21:30:00",
+    "verificationTime": 600,
+    "isResolved": false,
+    "totalYesAmount": "0.0",
+    "totalNoAmount": "0.0",
+    "requestTime": 0,
+    "requestTimeFormatted": "Not requested",
+    "outcome": "NO",
+    "category": "CRYPTO",
+    "imageUrl": "https://i.ibb.co/YPq8Jw7/bitcoin.png"
+  },
+  {
+    "marketId": "2",
+    "description": "This market resolves to YES if the price of Bitcoin (BTC) reaches or exceeds $100,000 USD on any major exchange before December 31, 2024 23:59:59 UTC. Otherwise, it resolves to NO.",
+    "creator": "0x504b635B7E22F8DF7d037cf31639811AE583E9f0",
+    "expirationDate": 1742070600,
+    "expirationDateFormatted": "15/03/2025 21:30:00",
+    "verificationTime": 600,
+    "isResolved": false,
+    "totalYesAmount": "0.0",
+    "totalNoAmount": "0.0",
+    "requestTime": 0,
+    "requestTimeFormatted": "Not requested",
+    "outcome": "NO",
+    "category": "CRYPTO",
+    "imageUrl": "https://i.ibb.co/YPq8Jw7/bitcoin.png"
+  }
+]

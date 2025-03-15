@@ -11,3 +11,14 @@ npx ts-node scripts/requestSettlement.ts
 
 npx ts-node scripts/settleBets.ts 
 npx ts-node scripts/withdrawFees.ts 3
+
+
+node scripts/createMarket.js
+node scripts/getAllMarkets.js
+node scripts/getActiveMarkets.js
+
+node scripts/placeBet.js 1 0 0.1
+
+node scripts/getAllBets.js
+node scripts/settleBets.js
+

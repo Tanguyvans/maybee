@@ -7,7 +7,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 contract BettingContract {
     // UMA Protocol
     OptimisticOracleV2Interface public immutable oo;
-    bytes32 public constant IDENTIFIER = bytes32("YES_OR_NO_QUERY");
+    bytes32 public constant IDENTIFIER = "MULTIPLE_CHOICE_QUERY"; // YES_OR_NO_QUERY
     address public constant WETH = 0x7b79995e5f793A07Bc00c21412e50Ecae098E7f9;
 
     // Role management
@@ -35,20 +35,19 @@ contract BettingContract {
         uint256 expirationDate;
         uint256 verificationTime;
         bool isResolved;
-        uint256 totalYesAmount;
-        uint256 totalNoAmount;
+        uint256[] optionAmounts;
         uint256 requestTime;
-        bool outcome;
+        int256 outcome;
         bytes questionText;
         string imageUrl;
         MarketCategory category;
         mapping(address => UserBet) userBets;
         address[] bettors;
+        uint256 optionCount;
     }
 
     struct UserBet {
-        uint256 yesAmount;
-        uint256 noAmount;
+        uint256[] optionAmounts;
         bool claimed;
     }
 
@@ -64,12 +63,12 @@ contract BettingContract {
         uint256 expirationDate;
         uint256 verificationTime;
         bool isResolved;
-        uint256 totalYesAmount;
-        uint256 totalNoAmount;
+        uint256[] optionAmounts;
         uint256 requestTime;
-        bool outcome;
+        int256 outcome;
         MarketCategory category;
         string imageUrl;
+        uint256 optionCount;
     }
 
     // Events
@@ -87,7 +86,7 @@ contract BettingContract {
         address indexed user,
         uint256 indexed marketId,
         uint256 amount,
-        bool isYes
+        uint256 optionIndex
     );
     event SettlementRequested(uint256 indexed marketId, uint256 requestTime);
     event MarketResolved(uint256 indexed marketId, bool outcome);
@@ -155,26 +154,56 @@ contract BettingContract {
     function createMarketAdmin(
         string memory title,
         string memory description,
+        string[] memory options,
         uint256 expirationDate,
         uint256 _verificationTime,
-        string memory marketDetails,
         string memory imageUrl,
         MarketCategory category
     ) external onlyBetCreator {
         require(expirationDate > block.timestamp, "Invalid expiration date");
         require(_verificationTime >= 150, "Verification time too short");
         require(_verificationTime <= 86400, "Verification time too long"); // Max 24 hours
+        require(options.length >= 2, "At least 2 options required");
+        require(options.length <= 10, "Maximum 10 options allowed");
 
+        // Create a properly formatted JSON object for UMA's MULTIPLE_CHOICE_QUERY
+        string memory jsonStart = '{"title":"';
+        string memory jsonTitleEnd = '","description":"';
+        string memory jsonDescEnd = '","options":[';
+
+        // Start building the JSON
         string memory formattedQuestion = string(
             abi.encodePacked(
-                "title: ",
+                jsonStart,
                 title,
-                ", description: ",
+                jsonTitleEnd,
                 description,
-                ", ",
-                marketDetails
+                jsonDescEnd
             )
         );
+
+        // Add options
+        for (uint i = 0; i < options.length; i++) {
+            // Format: ["Option1","0"],["Option2","1"]
+            if (i > 0) {
+                formattedQuestion = string(
+                    abi.encodePacked(formattedQuestion, ",")
+                );
+            }
+            formattedQuestion = string(
+                abi.encodePacked(
+                    formattedQuestion,
+                    '["',
+                    options[i],
+                    '","',
+                    uintToString(i),
+                    '"]'
+                )
+            );
+        }
+
+        // Close the JSON object
+        formattedQuestion = string(abi.encodePacked(formattedQuestion, "]}"));
 
         marketCount++;
         Market storage market = markets[marketCount];
@@ -185,6 +214,11 @@ contract BettingContract {
         market.questionText = bytes(formattedQuestion);
         market.imageUrl = imageUrl;
         market.category = category;
+        market.outcome = -1; // Initialize as unresolved
+        market.optionCount = options.length;
+
+        // Initialize the optionAmounts array with the correct size
+        market.optionAmounts = new uint256[](options.length);
 
         marketIds.push(marketCount);
 
@@ -196,38 +230,73 @@ contract BettingContract {
         );
     }
 
-    function placeBet(uint256 marketId, bool isYes) external payable {
+    // Helper function to convert uint to string
+    function uintToString(uint256 value) internal pure returns (string memory) {
+        if (value == 0) {
+            return "0";
+        }
+
+        uint256 temp = value;
+        uint256 digits;
+
+        while (temp != 0) {
+            digits++;
+            temp /= 10;
+        }
+
+        bytes memory buffer = new bytes(digits);
+        while (value != 0) {
+            digits -= 1;
+            buffer[digits] = bytes1(uint8(48 + uint256(value % 10)));
+            value /= 10;
+        }
+
+        return string(buffer);
+    }
+
+    // Internal function that both placeBet and placeBetYesNo will call
+    function _placeBet(uint256 marketId, uint256 optionIndex) internal {
         require(
             marketId > 0 && marketId <= marketCount,
             "Market does not exist"
         );
         Market storage market = markets[marketId];
-        UserBet storage userBet = market.userBets[msg.sender];
 
         require(!market.isResolved, "Market is resolved");
         require(block.timestamp < market.expirationDate, "Market has expired");
         require(msg.value > 0, "Bet amount must be greater than 0");
+        require(optionIndex < market.optionCount, "Invalid option index");
 
         // Calculate platform fee
         uint256 fee = (msg.value * PLATFORM_FEE) / 10000;
         uint256 betAmount = msg.value - fee;
         platformBalance += fee;
 
-        // Update market totals and user bet
-        if (isYes) {
-            market.totalYesAmount += betAmount;
-            userBet.yesAmount += betAmount;
-        } else {
-            market.totalNoAmount += betAmount;
-            userBet.noAmount += betAmount;
-        }
+        // Get or initialize user bet
+        UserBet storage userBet = market.userBets[msg.sender];
 
-        // Add bettor to list if first bet
-        if (userBet.yesAmount + userBet.noAmount == betAmount) {
+        // Initialize user's optionAmounts array if this is their first bet
+        if (userBet.optionAmounts.length == 0) {
+            userBet.optionAmounts = new uint256[](market.optionCount);
             market.bettors.push(msg.sender);
         }
 
-        emit BetPlaced(msg.sender, marketId, betAmount, isYes);
+        // Update market totals and user bet
+        market.optionAmounts[optionIndex] += betAmount;
+        userBet.optionAmounts[optionIndex] += betAmount;
+
+        emit BetPlaced(msg.sender, marketId, betAmount, optionIndex);
+    }
+
+    // Public function for placing bets with option index
+    function placeBet(uint256 marketId, uint256 optionIndex) external payable {
+        _placeBet(marketId, optionIndex);
+    }
+
+    // Public function for placing Yes/No bets (backward compatibility)
+    function placeBetYesNo(uint256 marketId, bool isYes) external payable {
+        uint256 optionIndex = isYes ? 1 : 0;
+        _placeBet(marketId, optionIndex);
     }
 
     function requestSettlement(
@@ -298,10 +367,25 @@ contract BettingContract {
             )
             .resolvedPrice;
 
-        market.outcome = result == 1;
+        // Check if the result is a special value
+        if (result == type(int256).min) {
+            // Too early response, might want to handle this
+            revert("Oracle response: Too early to determine result");
+        } else if (result == type(int256).max) {
+            // No answer possible
+            revert("Oracle response: No answer possible");
+        }
+
+        // Ensure the result is a valid option index
+        require(
+            result >= 0 && uint256(result) < market.optionCount,
+            "Invalid option index from oracle"
+        );
+
+        market.outcome = result;
         market.isResolved = true;
 
-        emit MarketResolved(marketId, market.outcome);
+        emit MarketResolved(marketId, result == 1); // For backward compatibility, still emit true if option 1 wins
     }
 
     function claimWinnings(uint256 marketId) external {
@@ -314,41 +398,41 @@ contract BettingContract {
 
         UserBet storage userBet = market.userBets[msg.sender];
         require(!userBet.claimed, "Winnings already claimed");
-        require(
-            userBet.yesAmount > 0 || userBet.noAmount > 0,
-            "No bets placed"
-        );
 
-        uint256 winnings = 0;
-
-        // If YES wins
-        if (market.outcome) {
-            if (userBet.yesAmount > 0) {
-                if (market.totalNoAmount > 0) {
-                    // Normal case: distribute losing pool
-                    winnings =
-                        userBet.yesAmount +
-                        (userBet.yesAmount * market.totalNoAmount) /
-                        market.totalYesAmount;
-                } else {
-                    // Edge case: everyone bet YES
-                    winnings = userBet.yesAmount; // Just return original bet
-                }
+        // Check if user placed any bets
+        bool hasBets = false;
+        for (uint256 i = 0; i < market.optionCount; i++) {
+            if (userBet.optionAmounts[i] > 0) {
+                hasBets = true;
+                break;
             }
         }
-        // If NO wins
-        else {
-            if (userBet.noAmount > 0) {
-                if (market.totalYesAmount > 0) {
-                    // Normal case: distribute losing pool
-                    winnings =
-                        userBet.noAmount +
-                        (userBet.noAmount * market.totalYesAmount) /
-                        market.totalNoAmount;
-                } else {
-                    // Edge case: everyone bet NO
-                    winnings = userBet.noAmount; // Just return original bet
+        require(hasBets, "No bets placed");
+
+        uint256 winningOption = uint256(market.outcome);
+        uint256 winnings = 0;
+
+        // If user bet on the winning option
+        if (userBet.optionAmounts[winningOption] > 0) {
+            uint256 totalWinningAmount = market.optionAmounts[winningOption];
+            uint256 totalLosingAmount = 0;
+
+            // Calculate total losing amount
+            for (uint256 i = 0; i < market.optionCount; i++) {
+                if (i != winningOption) {
+                    totalLosingAmount += market.optionAmounts[i];
                 }
+            }
+
+            if (totalLosingAmount > 0) {
+                // Normal case: distribute losing pool
+                winnings =
+                    userBet.optionAmounts[winningOption] +
+                    (userBet.optionAmounts[winningOption] * totalLosingAmount) /
+                    totalWinningAmount;
+            } else {
+                // Edge case: everyone bet on the winning option
+                winnings = userBet.optionAmounts[winningOption]; // Just return original bet
             }
         }
 
@@ -359,52 +443,54 @@ contract BettingContract {
         emit WinningsClaimed(msg.sender, marketId, winnings);
     }
 
-    // View functions
+    function getUserBet(
+        address user,
+        uint256 marketId
+    ) external view returns (uint256[] memory optionAmounts, bool claimed) {
+        UserBet storage userBet = markets[marketId].userBets[user];
+        return (userBet.optionAmounts, userBet.claimed);
+    }
+
     function getMarketDetails(
         uint256 marketId
     )
         external
         view
         returns (
+            uint256 id,
             string memory description,
             address creator,
             uint256 expirationDate,
             uint256 verificationTime,
             bool isResolved,
-            uint256 totalYesAmount,
-            uint256 totalNoAmount,
+            uint256[] memory optionAmounts,
             uint256 requestTime,
-            bool outcome,
+            int256 outcome,
             MarketCategory category,
-            string memory imageUrl
+            string memory imageUrl,
+            uint256 optionCount
         )
     {
-        Market storage market = markets[marketId];
-        return (
-            market.description,
-            market.creator,
-            market.expirationDate,
-            market.verificationTime,
-            market.isResolved,
-            market.totalYesAmount,
-            market.totalNoAmount,
-            market.requestTime,
-            market.outcome,
-            market.category,
-            market.imageUrl
+        require(
+            marketId > 0 && marketId <= marketCount,
+            "Market does not exist"
         );
-    }
+        Market storage marketData = markets[marketId];
 
-    function getUserBet(
-        address user,
-        uint256 marketId
-    )
-        external
-        view
-        returns (uint256 yesAmount, uint256 noAmount, bool claimed)
-    {
-        UserBet storage userBet = markets[marketId].userBets[user];
-        return (userBet.yesAmount, userBet.noAmount, userBet.claimed);
+        return (
+            marketId,
+            marketData.description,
+            marketData.creator,
+            marketData.expirationDate,
+            marketData.verificationTime,
+            marketData.isResolved,
+            marketData.optionAmounts,
+            marketData.requestTime,
+            marketData.outcome,
+            marketData.category,
+            marketData.imageUrl,
+            marketData.optionCount
+        );
     }
 
     function getAllMarketIds() external view returns (uint256[] memory) {
@@ -415,7 +501,7 @@ contract BettingContract {
         uint256 totalMarkets = marketIds.length;
         MarketView[] memory allMarkets = new MarketView[](totalMarkets);
 
-        for (uint256 i = 0; i < marketIds.length; i++) {
+        for (uint256 i = 0; i < totalMarkets; i++) {
             uint256 id = marketIds[i];
             Market storage market = markets[id];
 
@@ -426,15 +512,33 @@ contract BettingContract {
                 expirationDate: market.expirationDate,
                 verificationTime: market.verificationTime,
                 isResolved: market.isResolved,
-                totalYesAmount: market.totalYesAmount,
-                totalNoAmount: market.totalNoAmount,
+                optionAmounts: market.optionAmounts,
                 requestTime: market.requestTime,
                 outcome: market.outcome,
                 category: market.category,
-                imageUrl: market.imageUrl
+                imageUrl: market.imageUrl,
+                optionCount: market.optionCount
             });
         }
 
         return allMarkets;
+    }
+
+    function getTotalPoolSize(
+        uint256 marketId
+    ) external view returns (uint256) {
+        require(
+            marketId > 0 && marketId <= marketCount,
+            "Market does not exist"
+        );
+
+        Market storage market = markets[marketId];
+        uint256 total = 0;
+
+        for (uint256 i = 0; i < market.optionCount; i++) {
+            total += market.optionAmounts[i];
+        }
+
+        return total;
     }
 }
