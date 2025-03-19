@@ -200,7 +200,7 @@ export default function Main() {
 
   const Header = () => (
     <motion.header
-      className="sticky top-0 z-50 bg-white shadow-md"
+      className="fixed w-full top-0 z-50 backdrop-blur-xl bg-white/50 shadow-md"
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
@@ -245,7 +245,7 @@ export default function Main() {
 
   const HeroSection = () => (
     <motion.section
-      className="py-16 bg-gradient-to-br from-white via-[#f8f8ff] to-[#f0f0ff] relative overflow-hidden"
+      className="py-16 mt-32 bg-gradient-to-br from-white via-[#f8f8ff] to-[#f0f0ff] relative overflow-hidden"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
