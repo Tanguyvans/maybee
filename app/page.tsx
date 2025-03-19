@@ -17,6 +17,7 @@ import {
 } from "framer-motion";
 import { ethers } from "ethers";
 import contractABI from "./abi/Maybeebets.json";
+import { styles } from "./components/styles";
 // Add this interface near the top of your file, after your imports
 interface Market {
   marketId: any;
@@ -41,9 +42,9 @@ interface FormattedMarket {
 }
 
 export default function Main() {
-  const { sdkHasLoaded, user } = useDynamicContext();
-  const { telegramSignIn } = useTelegramLogin();
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  // const { sdkHasLoaded, user, setShowAuthFlow } = useDynamicContext();
+  // const { telegramSignIn } = useTelegramLogin();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const scrollRef = useRef(null);
   const { scrollYProgress } = useScroll();
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
@@ -51,8 +52,13 @@ export default function Main() {
   const rotation = useTransform(scrollYProgress, [0, 1], [0, 20]);
   const blur = useTransform(scrollYProgress, [0, 0.5], [0, 5]);
 
-  // Simple dark theme colors
-  const colorScheme = { primary: "#FFFFFF", secondary: "#AAAAAA" };
+  // Vibrant theme colors
+  const colorScheme = {
+    primary: "#EBFE06",
+    secondary: "#5BAD36",
+    cardBg: "#D1D5DB",
+    text: "#161616",
+  };
   const [isHovering, setIsHovering] = useState(false);
 
   // Contract address and ABI
@@ -150,23 +156,23 @@ export default function Main() {
     fetchMarkets();
   }, []);
 
-  useEffect(() => {
-    if (!sdkHasLoaded) return;
+  // useEffect(() => {
+  //   if (!sdkHasLoaded) return;
 
-    const signIn = async () => {
-      if (!user) {
-        await telegramSignIn({ forceCreateUser: true });
-      }
-      setIsLoading(false);
-    };
+  //   const signIn = async () => {
+  //     if (!user) {
+  //       await telegramSignIn({ forceCreateUser: true });
+  //     }
+  //     setIsLoading(false);
+  //   };
 
-    signIn();
-  }, [sdkHasLoaded, telegramSignIn, user]);
+  //   signIn();
+  // }, [sdkHasLoaded, telegramSignIn, user]);
 
   // Custom Bee Loader Component
   const BeeLoader = () => {
     return (
-      <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-80">
+      <div className="fixed inset-0 flex items-center justify-center z-50 bg-white bg-opacity-80">
         <motion.div
           className="relative"
           animate={{
@@ -197,7 +203,7 @@ export default function Main() {
             />
           </motion.div>
           <motion.div
-            className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 w-16 h-4 bg-yellow-400 rounded-full opacity-30"
+            className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 w-16 h-4 bg-[#EBFE06] rounded-full opacity-30"
             animate={{
               width: [64, 48, 64],
               opacity: [0.3, 0.1, 0.3],
@@ -210,7 +216,7 @@ export default function Main() {
           />
         </motion.div>
         <motion.p
-          className="absolute mt-32 text-xl font-game text-yellow-400"
+          className="absolute mt-32 text-xl font-dmsans text-[#161616]"
           animate={{
             opacity: [0.5, 1, 0.5],
           }}
@@ -231,14 +237,10 @@ export default function Main() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white overflow-hidden">
+    <div className="min-h-screen text-[#161616] overflow-hidden bg-white">
       {/* Header */}
       <motion.header
-        className="sticky top-0 z-50 backdrop-blur-md border-b"
-        style={{
-          borderColor: "#333",
-          background: `rgba(0, 0, 0, 0.8)`,
-        }}
+        className="sticky top-0 z-50 bg-white shadow-md"
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 20 }}
@@ -248,7 +250,10 @@ export default function Main() {
             className="flex items-center"
             whileHover={{ scale: 1.05 }}
           >
-            <motion.div>
+            <motion.div
+              whileHover={{ rotate: 10 }}
+              transition={{ duration: 0.3 }}
+            >
               <Image
                 src="/images/logo.png"
                 alt="Maybee Markets 🐝"
@@ -257,124 +262,132 @@ export default function Main() {
                 className="mr-2 rounded-full"
               />
             </motion.div>
-            <motion.h1 className="text-3xl font-bold font-game">
-              Maybee Markets 🐝
+            <motion.h1
+              className="text-3xl font-bold font-dmsans text-[#5BAD36]"
+              whileHover={{ scale: 1.05 }}
+            >
+              Maybee
             </motion.h1>
           </motion.div>
           <div className="flex items-center space-x-4">
-            <Link href="/create">
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Button className="font-game text-lg bg-zinc-800 border border-zinc-700">
-                  <span className="relative z-10">Create Market</span>
-                </Button>
-              </motion.div>
-            </Link>
-            <motion.div
-              className="ml-4"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <DynamicWidget />
-            </motion.div>
+            <button className="bg-[#EBFE06] hover:bg-opacity-90 text-[#161616] font-bold py-2 px-6 rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-lg">
+              <p className="flex text-[16px] font-[600]">Login / Signup</p>
+            </button>
           </div>
         </div>
       </motion.header>
 
       {/* Hero Section */}
       <motion.section
-        className="relative py-20 px-4 overflow-hidden"
-        style={{
-          opacity,
-          scale,
-          rotateX: rotation,
-          filter: `blur(${blur}px)`,
-        }}
-        ref={scrollRef}
+        className="py-16 bg-gradient-to-br from-white via-[#f8f8ff] to-[#f0f0ff] relative overflow-hidden"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
       >
-        <motion.div className="absolute inset-0 z-0">
-          <Image
-            src="/images/pepe-background.png"
-            alt="Pepe Background"
-            fill
-            style={{ objectFit: "cover", opacity: 0.2 }}
-            priority
-          />
-          <div
-            className="absolute inset-0"
-            style={{
-              background: `radial-gradient(circle at center, transparent 0%, #000000 100%)`,
-            }}
-          ></div>
-        </motion.div>
-
-        <div className="container mx-auto text-center relative z-1">
-          <motion.h2 className="text-7xl font-bold mb-6 font-game">
-            FEELS GOOD MAN
-          </motion.h2>
-          <motion.p className="text-2xl max-w-2xl mx-auto mb-10 font-game text-gray-300">
-            The dankest prediction market in the metaverse. Trade rare Pepes,
-            predict memes, and stack them gains! 🐸💰
-          </motion.p>
-          <div className="flex justify-center gap-4">
-            <Link href="/placeBet">
-              <motion.div
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="flex flex-col md:flex-row items-center justify-between">
+            <motion.div
+              className="md:w-1/2 mb-10 md:mb-0"
+              initial={{ x: -100, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+            >
+              <h1 className="text-5xl md:text-6xl font-bold mb-6 font-dmsans leading-tight">
+                Predict the Future,{" "}
+                <span className="text-[#5BAD36]">Earn Rewards</span>
+              </h1>
+              <p className="text-xl mb-8 text-gray-700 font-dmsans">
+                Join the hive mind and trade on the outcomes of future events
+                with Maybee Markets.
+              </p>
+              <motion.button
+                className="bg-[#EBFE06] text-[#161616] font-bold py-3 px-8 rounded-full text-lg shadow-lg hover:shadow-xl transition-all duration-300"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Button className="font-game text-xl bg-zinc-800 border border-zinc-700">
-                  <motion.span className="relative z-10">
-                    Ape In Now
-                  </motion.span>
-                </Button>
-              </motion.div>
-            </Link>
-            <Link href="/learn">
+                Start Trading Now
+              </motion.button>
+            </motion.div>
+            <motion.div
+              className="md:w-1/2 relative"
+              initial={{ x: 100, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+            >
               <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                className="relative h-80 w-80 mx-auto"
+                animate={{
+                  y: [0, -15, 0],
+                  rotate: [0, 5, 0, -5, 0],
+                }}
+                transition={{
+                  duration: 6,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
               >
-                <Button className="bg-transparent border border-zinc-700 font-game text-lg px-8 py-3">
-                  Learn More Fren
-                </Button>
+                <Image
+                  src="/images/logo.png"
+                  alt="Maybee Illustration"
+                  fill
+                  className="object-contain"
+                />
               </motion.div>
-            </Link>
+            </motion.div>
           </div>
         </div>
+
+        {/* Decorative elements */}
+        <motion.div
+          className="absolute top-20 left-10 w-20 h-20 rounded-full bg-[#EBFE06] opacity-20"
+          animate={{
+            scale: [1, 1.5, 1],
+            opacity: [0.2, 0.3, 0.2],
+          }}
+          transition={{ duration: 8, repeat: Infinity }}
+        />
+        <motion.div
+          className="absolute bottom-10 right-20 w-32 h-32 rounded-full bg-[#5BAD36] opacity-20"
+          animate={{
+            scale: [1, 1.3, 1],
+            opacity: [0.2, 0.1, 0.2],
+          }}
+          transition={{ duration: 7, repeat: Infinity }}
+        />
       </motion.section>
 
       {/* Category Filter */}
       <motion.section
-        className="container mx-auto px-4 mb-8"
+        className="container mx-auto px-4 py-8"
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         viewport={{ once: true }}
       >
-        <div className="flex overflow-x-auto pb-2 scrollbar-hide relative">
-          {/* Track indicator */}
-          <motion.div className="absolute h-1 bottom-0 rounded-full bg-zinc-700" />
+        <motion.h3
+          className="text-3xl font-bold mb-6 font-dmsans text-center"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          Explore <span className="text-[#5BAD36]">Markets</span>
+        </motion.h3>
 
+        <div className="flex overflow-x-auto py-4 scrollbar-hide relative justify-center">
           <div className="flex space-x-3">
             {categories.map((category) => (
               <motion.button
-                key={category}
+                className={`px-6 py-3 rounded-full text-[#161616] font-bold transition-all duration-300 ${
+                  activeCategory === category
+                    ? "bg-[#EBFE06] shadow-md"
+                    : "bg-gray-200 hover:bg-gray-300"
+                }`}
                 onClick={() => setActiveCategory(category)}
-                className={`px-5 py-2 rounded-full whitespace-nowrap font-game text-lg relative overflow-hidden`}
-                style={{
-                  background:
-                    activeCategory === category ? `#333` : `rgba(0, 0, 0, 0.8)`,
-                  border: `1px solid ${
-                    activeCategory === category ? "#fff" : "#555"
-                  }`,
-                  color: activeCategory === category ? "#fff" : "#aaa",
-                }}
+                key={category}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <span className="relative z-10">{category}</span>
+                {category}
               </motion.button>
             ))}
           </div>
@@ -384,7 +397,7 @@ export default function Main() {
       {/* Markets Grid */}
       <section className="container mx-auto px-4 pb-20">
         <motion.h3
-          className="text-4xl font-bold mb-8 font-game"
+          className="text-4xl font-bold mb-8 font-dmsans"
           initial={{ x: -100, opacity: 0 }}
           whileInView={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.5 }}
@@ -413,12 +426,13 @@ export default function Main() {
                     delay: index * 0.1,
                   }}
                   viewport={{ once: true }}
-                  whileHover={{ scale: 1.02 }}
-                  onHoverStart={() => setIsHovering(true)}
-                  onHoverEnd={() => setIsHovering(false)}
+                  whileHover={{
+                    scale: 1.03,
+                    boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+                  }}
                   style={{
-                    background: `#111`,
-                    border: `1px solid #333`,
+                    background: index % 2 === 0 ? "#D1D5DB" : "#5BAD36",
+                    borderRadius: "16px",
                   }}
                 >
                   <div className="relative h-48 w-full overflow-hidden">
@@ -429,22 +443,23 @@ export default function Main() {
                       <img
                         src={market.image}
                         alt={market.title}
-                        style={{ objectFit: "cover" }}
-                        className="transition-transform duration-500"
+                        className="w-full h-full object-cover transition-transform duration-500"
                       />
                     </motion.div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent"></div>
-                    <motion.div className="absolute bottom-4 left-4">
-                      <motion.span
-                        className="px-4 py-2 rounded-full text-sm font-bold font-game bg-zinc-800"
-                        whileHover={{ scale: 1.05 }}
-                      >
+                    <motion.div
+                      className="absolute top-4 right-4 bg-[#EBFE06] px-4 py-2 rounded-full shadow-md"
+                      whileHover={{ scale: 1.05 }}
+                    >
+                      <span className="text-sm font-bold text-[#161616]">
                         {market.category}
-                      </motion.span>
+                      </span>
                     </motion.div>
                   </div>
                   <div className="p-6">
-                    <motion.h4 className="text-xl font-bold mb-4 font-game">
+                    <motion.h4
+                      className="text-xl font-bold mb-4 font-dmsans text-[#161616]"
+                      whileHover={{ scale: 1.01 }}
+                    >
                       {market.title}
                     </motion.h4>
 
@@ -454,8 +469,8 @@ export default function Main() {
                           className="flex items-center"
                           whileHover={{ scale: 1.05 }}
                         >
-                          <motion.div className="w-4 h-4 rounded-full mr-2 bg-white"></motion.div>
-                          <span className="font-game">
+                          <motion.div className="w-4 h-4 rounded-full mr-2 bg-[#EBFE06]"></motion.div>
+                          <span className="font-dmsans text-[#161616]">
                             Based: {market.yesPercentage}%
                           </span>
                         </motion.span>
@@ -463,15 +478,15 @@ export default function Main() {
                           className="flex items-center"
                           whileHover={{ scale: 1.05 }}
                         >
-                          <motion.div className="w-4 h-4 rounded-full mr-2 bg-zinc-500"></motion.div>
-                          <span className="font-game">
+                          <motion.div className="w-4 h-4 rounded-full mr-2 bg-[#161616]"></motion.div>
+                          <span className="font-dmsans text-[#161616]">
                             Cringe: {market.noPercentage}%
                           </span>
                         </motion.span>
                       </div>
-                      <div className="w-full bg-zinc-900 rounded-full h-4 overflow-hidden">
+                      <div className="w-full bg-white bg-opacity-50 rounded-full h-4 overflow-hidden">
                         <motion.div
-                          className="h-4 bg-zinc-700"
+                          className="h-4 bg-[#EBFE06]"
                           style={{
                             width: `${market.yesPercentage}%`,
                           }}
@@ -489,22 +504,28 @@ export default function Main() {
                     </div>
 
                     <div className="flex justify-between items-center">
-                      <motion.span
-                        className="text-sm flex items-center font-game text-gray-400"
-                        whileHover={{ scale: 1.05 }}
-                      >
-                        {market.liquidity}
-                      </motion.span>
-                      <Link href={`/market/${market.id}`}>
-                        <motion.div
+                      <div className="flex flex-col">
+                        <motion.span
+                          className="text-sm font-bold font-dmsans text-[#161616]"
                           whileHover={{ scale: 1.05 }}
+                        >
+                          {market.liquidity}
+                        </motion.span>
+                        <motion.span className="text-xs font-dmsans text-[#161616] opacity-70">
+                          Expires: {market.expirationDate}
+                        </motion.span>
+                      </div>
+                      <Link href={`/market/${market.id}`}>
+                        <motion.button
+                          className="bg-[#EBFE06] text-[#161616] font-bold py-2 px-6 rounded-full shadow-md"
+                          whileHover={{
+                            scale: 1.05,
+                            boxShadow: "0 5px 15px rgba(0,0,0,0.1)",
+                          }}
                           whileTap={{ scale: 0.95 }}
                         >
-                          {market.expirationDate}
-                          <Button className="text-sm px-6 py-3 font-game bg-zinc-800 border border-zinc-700">
-                            Trade Now
-                          </Button>
-                        </motion.div>
+                          Trade Now
+                        </motion.button>
                       </Link>
                     </div>
                   </div>
@@ -516,25 +537,19 @@ export default function Main() {
 
       {/* How It Works Section */}
       <motion.section
-        className="py-16 relative overflow-hidden"
-        style={{
-          background: `#111`,
-          borderTop: `1px solid #333`,
-          borderBottom: `1px solid #333`,
-        }}
+        className="py-16 relative overflow-hidden bg-gradient-to-br from-[#f8f8ff] to-[#f0f0ff]"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
         viewport={{ once: true }}
       >
-        <div className="absolute inset-0 bg-[url('/images/pepe-pattern.png')] opacity-5"></div>
         <div className="container mx-auto px-4 relative z-10">
           <motion.h3
-            className="text-4xl font-bold text-center mb-12 font-game"
+            className="text-4xl font-bold text-center mb-12 font-dmsans"
             initial={{ opacity: 0, scale: 0.8 }}
             whileInView={{ opacity: 1, scale: 1 }}
           >
-            How To Get Rich
+            How To <span className="text-[#5BAD36]">Get Rich</span>
           </motion.h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
@@ -556,7 +571,7 @@ export default function Main() {
             ].map((item, index) => (
               <motion.div
                 key={index}
-                className="flex flex-col items-center text-center p-8 rounded-2xl backdrop-blur-sm relative z-10"
+                className="flex flex-col items-center text-center p-8 rounded-2xl relative z-10"
                 initial={{ opacity: 0, y: 50 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{
@@ -565,21 +580,105 @@ export default function Main() {
                   type: "spring",
                 }}
                 viewport={{ once: true }}
-                whileHover={{ scale: 1.03 }}
+                whileHover={{
+                  scale: 1.03,
+                  boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
+                }}
                 style={{
-                  background: `#111`,
-                  border: `1px solid #333`,
+                  background: index % 2 === 0 ? "#D1D5DB" : "#5BAD36",
+                  borderRadius: "16px",
                 }}
               >
-                <motion.div className="relative w-40 h-40 mb-8">
-                  <Image src={item.image} alt={item.title} fill />
+                <motion.div
+                  className="relative w-40 h-40 mb-8"
+                  whileHover={{ rotate: [0, -5, 5, -5, 0] }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <Image
+                    src={item.image}
+                    alt={item.title}
+                    fill
+                    className="object-contain"
+                  />
                 </motion.div>
-                <motion.h4 className="text-2xl font-bold mb-3 font-game">
+                <motion.h4 className="text-2xl font-bold mb-3 font-dmsans text-[#161616]">
                   {item.title}
                 </motion.h4>
-                <motion.p className="text-lg font-game text-gray-400">
+                <motion.p className="text-lg font-dmsans text-[#161616] opacity-80">
                   {item.desc}
                 </motion.p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+
+        {/* Decorative elements */}
+        <motion.div
+          className="absolute top-40 right-10 w-24 h-24 rounded-full bg-[#EBFE06] opacity-20"
+          animate={{
+            scale: [1, 1.5, 1],
+            opacity: [0.2, 0.3, 0.2],
+          }}
+          transition={{ duration: 8, repeat: Infinity }}
+        />
+        <motion.div
+          className="absolute bottom-20 left-10 w-32 h-32 rounded-full bg-[#5BAD36] opacity-20"
+          animate={{
+            scale: [1, 1.3, 1],
+            opacity: [0.2, 0.1, 0.2],
+          }}
+          transition={{ duration: 7, repeat: Infinity }}
+        />
+      </motion.section>
+
+      {/* Stats Section */}
+      <motion.section
+        className="py-16 bg-white"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
+        viewport={{ once: true }}
+      >
+        <div className="container mx-auto px-4">
+          <motion.h3
+            className="text-4xl font-bold text-center mb-12 font-dmsans"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            Market <span className="text-[#5BAD36]">Stats</span>
+          </motion.h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {[
+              { value: "$2.4M", label: "Total Volume" },
+              { value: "12,450", label: "Active Traders" },
+              { value: "98%", label: "Resolved Markets" },
+              { value: "24/7", label: "Market Hours" },
+            ].map((stat, index) => (
+              <motion.div
+                key={index}
+                className="bg-gradient-to-br from-[#D1D5DB] to-[#5BAD36] p-8 rounded-2xl text-center"
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1, duration: 0.5 }}
+                viewport={{ once: true }}
+                whileHover={{
+                  scale: 1.05,
+                  boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+                }}
+              >
+                <motion.div
+                  className="text-4xl font-bold mb-2 font-dmsans text-[#161616]"
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  whileInView={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.2 + index * 0.1, duration: 0.5 }}
+                >
+                  {stat.value}
+                </motion.div>
+                <motion.div className="text-lg font-dmsans text-[#161616] opacity-80">
+                  {stat.label}
+                </motion.div>
               </motion.div>
             ))}
           </div>
@@ -588,11 +687,10 @@ export default function Main() {
 
       {/* Footer */}
       <motion.footer
-        className="relative overflow-hidden py-12"
-        style={{
-          background: `#000`,
-          borderTop: `1px solid #333`,
-        }}
+        className="relative overflow-hidden py-12 bg-gradient-to-br from-[#f8f8ff] to-[#f0f0ff]"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
       >
         <div className="container mx-auto px-4 relative z-10">
           <div className="flex flex-col md:flex-row justify-between items-center mb-10">
@@ -600,17 +698,21 @@ export default function Main() {
               className="flex items-center mb-6 md:mb-0"
               whileHover={{ scale: 1.05 }}
             >
-              <motion.div className="rounded-full">
+              <motion.div
+                className="rounded-full"
+                whileHover={{ rotate: 10 }}
+                transition={{ duration: 0.3 }}
+              >
                 <Image
                   src="/images/logo.png"
-                  alt="Pepe Logo"
+                  alt="Maybee Logo"
                   width={70}
                   height={70}
                   className="mr-3 rounded-full"
                 />
               </motion.div>
-              <motion.h1 className="text-3xl font-bold font-game">
-                Maybee Markets 🐝
+              <motion.h1 className="text-3xl font-bold font-dmsans text-[#5BAD36]">
+                Maybee
               </motion.h1>
             </motion.div>
             <div className="flex space-x-8">
@@ -623,72 +725,38 @@ export default function Main() {
                 <motion.a
                   key={index}
                   href="#"
-                  whileHover={{ scale: 1.2 }}
+                  whileHover={{
+                    scale: 1.2,
+                    rotate: 10,
+                  }}
                   whileTap={{ scale: 0.9 }}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
                 >
-                  <div className="w-10 h-10 flex items-center justify-center rounded-full bg-zinc-900 border border-zinc-800">
+                  <div className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-md">
                     <Image
                       src={social.icon}
                       alt={social.alt}
                       width={24}
                       height={24}
-                      style={{ filter: "brightness(10)" }}
                     />
                   </div>
                 </motion.a>
               ))}
             </div>
           </div>
-          <motion.div className="text-center mt-8 text-sm font-game text-gray-500">
-            <p>© 2024 Maybee Markets 🐝. All your base are belong to us. 🐸</p>
-          </motion.div>
+          <div className="flex flex-col md:flex-row justify-between pt-8 border-t border-gray-200">
+            <div className="flex space-x-8 mb-6 md:mb-0 justify-center md:justify-start">
+              <motion.div className="text-center mt-8 text-sm font-dmsans text-gray-500">
+                <p>
+                  © 2024 Maybee Markets 🐝. All your base are belong to us. 🐸
+                </p>
+              </motion.div>
+            </div>
+          </div>
         </div>
       </motion.footer>
-
-      {/* Add globally required styles */}
-      <style jsx global>{`
-        @font-face {
-          font-family: "GameFont";
-          src: url("/fonts/pixel.woff2") format("woff2");
-          font-weight: normal;
-          font-style: normal;
-        }
-
-        .font-game {
-          font-family: "GameFont", sans-serif;
-          letter-spacing: 1px;
-        }
-
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-          width: 10px;
-          height: 10px;
-        }
-
-        ::-webkit-scrollbar-track {
-          background: #000;
-        }
-
-        ::-webkit-scrollbar-thumb {
-          background: #333;
-          border-radius: 5px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-          background: #555;
-        }
-
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-
-        /* For Firefox */
-        .scrollbar-hide {
-          scrollbar-width: none;
-        }
-      `}</style>
     </div>
   );
 }

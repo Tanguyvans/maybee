@@ -41,20 +41,20 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      <DynamicContextProvider
+      {/* <DynamicContextProvider
         settings={{
           environmentId: dynamicEnvId,
           walletConnectors: [EthereumWalletConnectors],
         }}
-      >
-        <WagmiProvider config={config}>
-          <QueryClientProvider client={queryClient}>
-            <DynamicWagmiConnector>
-              <body className={inter.className}>{children}</body>
-            </DynamicWagmiConnector>
-          </QueryClientProvider>
-        </WagmiProvider>
-      </DynamicContextProvider>
+      > */}
+      <WagmiProvider config={config}>
+        <QueryClientProvider client={queryClient}>
+          {/* <DynamicWagmiConnector> */}
+          <body className={inter.className}>{children}</body>
+          {/* </DynamicWagmiConnector> */}
+        </QueryClientProvider>
+      </WagmiProvider>
+      {/* </DynamicContextProvider> */}
     </html>
   );
 }
