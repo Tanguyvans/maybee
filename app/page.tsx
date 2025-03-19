@@ -263,8 +263,16 @@ export default function Main() {
               />
             </motion.div>
             <motion.h1
-              className="text-3xl font-bold font-dmsans text-[#5BAD36]"
+              className="text-3xl font-bold font-dmsans text-[#EBFE06]"
               whileHover={{ scale: 1.05 }}
+              style={{
+                textShadow: `
+                  -1px -1px 0 #161616,
+                  1px -1px 0 #161616,
+                  -1px 1px 0 #161616,
+                  1px 1px 0 #161616
+                `,
+              }}
             >
               Maybee
             </motion.h1>
@@ -370,7 +378,7 @@ export default function Main() {
           whileInView={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
-          Explore <span className="text-[#5BAD36]">Markets</span>
+          Explore <span className="text-[#5BAD36]">Hives</span>
         </motion.h3>
 
         <div className="flex overflow-x-auto py-4 scrollbar-hide relative justify-center">
@@ -380,7 +388,7 @@ export default function Main() {
                 className={`px-6 py-3 rounded-full text-[#161616] font-bold transition-all duration-300 ${
                   activeCategory === category
                     ? "bg-[#EBFE06] shadow-md"
-                    : "bg-gray-200 hover:bg-gray-300"
+                    : "bg-[#A39EFF] text-[#f3f2ff] hover:bg-[#EBFE06] hover:text-[#161616]"
                 }`}
                 onClick={() => setActiveCategory(category)}
                 key={category}
@@ -396,15 +404,6 @@ export default function Main() {
 
       {/* Markets Grid */}
       <section className="container mx-auto px-4 pb-20">
-        <motion.h3
-          className="text-4xl font-bold mb-8 font-dmsans"
-          initial={{ x: -100, opacity: 0 }}
-          whileInView={{ x: 0, opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          viewport={{ once: true }}
-        >
-          Dankest Markets
-        </motion.h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           <AnimatePresence>
             {predictionMarkets
@@ -431,7 +430,8 @@ export default function Main() {
                     boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
                   }}
                   style={{
-                    background: index % 2 === 0 ? "#D1D5DB" : "#5BAD36",
+                    background: "#161616",
+                    color: "#EBFE06",
                     borderRadius: "16px",
                   }}
                 >
@@ -457,7 +457,7 @@ export default function Main() {
                   </div>
                   <div className="p-6">
                     <motion.h4
-                      className="text-xl font-bold mb-4 font-dmsans text-[#161616]"
+                      className="text-xl font-bold mb-4 font-dmsans text-[#EBFE06]"
                       whileHover={{ scale: 1.01 }}
                     >
                       {market.title}
@@ -470,7 +470,7 @@ export default function Main() {
                           whileHover={{ scale: 1.05 }}
                         >
                           <motion.div className="w-4 h-4 rounded-full mr-2 bg-[#EBFE06]"></motion.div>
-                          <span className="font-dmsans text-[#161616]">
+                          <span className="font-dmsans text-[#EBFE06]">
                             Based: {market.yesPercentage}%
                           </span>
                         </motion.span>
@@ -478,13 +478,13 @@ export default function Main() {
                           className="flex items-center"
                           whileHover={{ scale: 1.05 }}
                         >
-                          <motion.div className="w-4 h-4 rounded-full mr-2 bg-[#161616]"></motion.div>
-                          <span className="font-dmsans text-[#161616]">
+                          <motion.div className="w-4 h-4 rounded-full mr-2 bg-[#A39EFF]"></motion.div>
+                          <span className="font-dmsans text-[#A39EFF]">
                             Cringe: {market.noPercentage}%
                           </span>
                         </motion.span>
                       </div>
-                      <div className="w-full bg-white bg-opacity-50 rounded-full h-4 overflow-hidden">
+                      <div className="w-full bg-[#A39EFF] rounded-full h-4 overflow-hidden">
                         <motion.div
                           className="h-4 bg-[#EBFE06]"
                           style={{
@@ -506,12 +506,12 @@ export default function Main() {
                     <div className="flex justify-between items-center">
                       <div className="flex flex-col">
                         <motion.span
-                          className="text-sm font-bold font-dmsans text-[#161616]"
+                          className="text-sm font-bold font-dmsans text-[#EBFE06]"
                           whileHover={{ scale: 1.05 }}
                         >
                           {market.liquidity}
                         </motion.span>
-                        <motion.span className="text-xs font-dmsans text-[#161616] opacity-70">
+                        <motion.span className="text-xs font-dmsans text-[#EBFE06] opacity-70">
                           Expires: {market.expirationDate}
                         </motion.span>
                       </div>
